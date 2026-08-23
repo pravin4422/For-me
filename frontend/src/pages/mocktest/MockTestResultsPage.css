@@ -1,0 +1,16 @@
+.results-page { padding: 24px; }
+.results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.results-header h2 { margin: 0; font-size: 20px; color: var(--text-primary, #222); }
+.btn-new-test { background: #1a73e8; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.results-empty { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 60px 20px; color: var(--text-secondary, #666); font-size: 14px; }
+.results-list { display: flex; flex-direction: column; gap: 10px; }
+.result-row { background: var(--bg-primary, #fff); border: 1px solid var(--border, #e0e0e0); border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.rr-meta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary, #555); }
+.rr-exam { font-weight: 700; font-size: 14px; color: var(--text-primary, #222); }
+.rr-score b { color: #1a73e8; }
+.rr-acc b   { color: #f57c00; }
+.rr-correct b { color: #2e7d32; }
+.rr-wrong b   { color: #c62828; }
+.rr-actions { display: flex; gap: 8px; }
+.rr-actions button { padding: 6px 14px; border-radius: 5px; border: 1.5px solid var(--border, #ccc); background: none; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-primary, #333); }
+.rr-actions button:first-child { background: #1a73e8; color: #fff; border-color: #1a73e8; }

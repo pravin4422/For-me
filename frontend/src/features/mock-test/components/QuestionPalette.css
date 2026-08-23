@@ -1,0 +1,23 @@
+.qpalette { display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--bg-secondary, #f8f9fa); border-radius: 8px; height: 100%; overflow-y: auto; }
+.qpalette-legend { display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--text-secondary, #666); }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+.qpalette-counts { display: flex; flex-wrap: wrap; gap: 6px; font-size: 11px; }
+.pc-item { background: var(--bg-primary, #fff); border: 1px solid var(--border, #e0e0e0); border-radius: 4px; padding: 2px 6px; }
+.qpalette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.qnum { width: 36px; height: 36px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: transform 0.1s; }
+.qnum:hover { transform: scale(1.1); }
+.qnum.current { outline: 2px solid #1a73e8; outline-offset: 2px; }
+
+/* Status colors matching real exam portals */
+.status-not-visited     { background: #e0e0e0; color: #333; }
+.status-not-answered    { background: #f44336; color: #fff; }
+.status-answered        { background: #4caf50; color: #fff; }
+.status-marked          { background: #9c27b0; color: #fff; }
+.status-answered-marked { background: #9c27b0; color: #fff; position: relative; }
+.status-answered-marked::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 6px; height: 6px; background: #4caf50; border-radius: 50%; }
+.legend-dot.status-not-visited     { background: #e0e0e0; }
+.legend-dot.status-not-answered    { background: #f44336; }
+.legend-dot.status-answered        { background: #4caf50; }
+.legend-dot.status-marked          { background: #9c27b0; }
+.legend-dot.status-answered-marked { background: #9c27b0; }

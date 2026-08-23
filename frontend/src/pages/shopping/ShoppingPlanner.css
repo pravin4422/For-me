@@ -1,0 +1,546 @@
+/* ── Shopping Planner — restricted to 5-color palette ── */
+:root {
+  --sp-indigo:  #343090;
+  --sp-violet:  #5f59f7;
+  --sp-blue:    #6592fd;
+  --sp-sky:     #44c2fd;
+  --sp-purple:  #8c61ff;
+}
+
+.sp-page {
+  padding: 24px;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── summary strip ── */
+.sp-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sp-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: var(--shadow-card);
+  flex: 1;
+  min-width: 180px;
+}
+
+.sp-summary-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sp-summary-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-heading);
+  line-height: 1.1;
+}
+
+.sp-summary-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sp-add-btn {
+  margin-left: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── tabs ── */
+.sp-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.sp-tab {
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  border-radius: 6px 6px 0 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.sp-tab:hover { color: var(--sp-violet); }
+
+.sp-tab--active {
+  color: var(--sp-violet);
+  border-bottom-color: var(--sp-violet);
+  background: var(--sp-violet)0d;
+}
+
+/* ── toolbar ── */
+.sp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sp-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-bucket-cost {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sp-violet);
+  background: var(--sp-violet)15;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.sp-view-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sp-view-btn.active,
+.sp-view-btn:hover {
+  background: var(--sp-violet);
+  color: #fff;
+  border-color: var(--sp-violet);
+}
+
+/* ── filter dropdown ── */
+.sp-filter-wrap { position: relative; }
+
+.sp-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sp-filter-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow-card-hover);
+  z-index: 100;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sp-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sp-filter-group > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 52px;
+}
+
+.sp-filter-chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sp-filter-chip:hover { border-color: var(--sp-violet); color: var(--sp-violet); }
+
+/* ── grid / list layouts ── */
+.sp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.sp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── item card ── */
+.sp-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s, box-shadow 0.18s;
+  display: flex;
+}
+
+.sp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.sp-card--grid { flex-direction: column; }
+.sp-card--list { flex-direction: row; align-items: stretch; }
+
+.sp-card-thumb {
+  background: var(--sp-indigo)11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sp-card--grid .sp-card-thumb {
+  height: 120px;
+  width: 100%;
+}
+
+.sp-card--list .sp-card-thumb {
+  width: 80px;
+  height: auto;
+}
+
+.sp-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sp-card-thumb-placeholder {
+  color: var(--sp-blue);
+  opacity: 0.5;
+}
+
+.sp-card-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.sp-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sp-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1.3;
+}
+
+.sp-card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.sp-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.sp-card-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sp-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sp-card-notes {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sp-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.sp-card-links { display: flex; gap: 6px; }
+.sp-card-btns  { display: flex; gap: 4px; }
+
+.sp-link-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--sp-blue)18;
+  color: var(--sp-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background 0.15s;
+  cursor: pointer;
+  border: none;
+}
+
+.sp-link-btn:hover { background: var(--sp-blue)35; }
+
+/* ── buttons ── */
+.sp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+
+.sp-btn--primary {
+  background: var(--sp-violet);
+  color: #fff;
+}
+
+.sp-btn--primary:hover { background: var(--sp-indigo); }
+.sp-btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sp-btn--ghost {
+  background: transparent;
+  color: var(--text-body);
+  border: 1px solid var(--border);
+}
+
+.sp-btn--ghost:hover { border-color: var(--sp-violet); color: var(--sp-violet); }
+
+.sp-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sp-icon-btn:hover { background: var(--sp-violet)18; color: var(--sp-violet); }
+.sp-icon-btn--del:hover { background: #ff4d4f18; color: #ff4d4f; }
+
+/* ── empty state ── */
+.sp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 300px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.sp-empty-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  background: var(--sp-violet)18;
+  color: var(--sp-violet);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-empty p { font-size: 14px; font-weight: 500; }
+
+/* ── modal ── */
+.sp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.sp-modal {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 540px;
+  height: auto;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  z-index: 10000;
+}
+
+.sp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-heading);
+  flex-shrink: 0;
+  background: var(--bg-surface);
+}
+
+.sp-modal-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-surface);
+}
+
+.sp-modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+}
+
+.sp-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sp-form-row label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sp-form-row input,
+.sp-form-row select,
+.sp-form-row textarea {
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-2);
+  color: var(--text-body);
+  font-size: 13.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sp-form-row input:focus,
+.sp-form-row select:focus,
+.sp-form-row textarea:focus {
+  border-color: var(--sp-violet);
+  box-shadow: 0 0 0 3px var(--sp-violet)22;
+}
+
+.sp-form-row textarea { resize: vertical; }
+
+.sp-form-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── responsive ── */
+@media (max-width: 640px) {
+  .sp-page { padding: 14px; gap: 14px; }
+
+  .sp-summary { flex-direction: column; }
+  .sp-summary-card { width: 100%; }
+  .sp-add-btn { width: 100%; justify-content: center; margin-left: 0; }
+
+  .sp-grid { grid-template-columns: 1fr; }
+
+  .sp-form-2col { grid-template-columns: 1fr; }
+
+  .sp-tab { padding: 7px 12px; font-size: 12.5px; }
+
+  .sp-card--list .sp-card-thumb { width: 64px; }
+}

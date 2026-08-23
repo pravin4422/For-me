@@ -1,0 +1,12 @@
+/* TopicsTab.css */
+/* tab-container, tab-header, tab-header__left, tab-header__right,
+   tab-empty, btn-primary, icon-btn, select-input → TabShared.css */
+/* topic-card, topic-card__* → TopicCard.css */
+/* subject-docs, doc-list, doc-list__* → SubjectsTab.css (shared panel) */
+/* modal-overlay, modal, modal__* → AddTopicModal.css */
+
+.topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

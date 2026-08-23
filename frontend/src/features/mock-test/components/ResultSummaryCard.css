@@ -1,0 +1,11 @@
+.result-summary-card { background: var(--bg-primary, #fff); border: 1px solid var(--border, #e0e0e0); border-radius: 10px; padding: 24px; }
+.rsc-title { margin: 0 0 16px; font-size: 18px; color: var(--text-primary, #222); }
+.rsc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.rsc-item { display: flex; flex-direction: column; align-items: center; padding: 14px 10px; border-radius: 8px; background: var(--bg-secondary, #f8f9fa); border: 1px solid var(--border, #e8e8e8); }
+.rsc-value { font-size: 26px; font-weight: 700; color: var(--text-primary, #222); }
+.rsc-label { font-size: 11px; color: var(--text-secondary, #666); margin-top: 4px; text-align: center; }
+.rsc-item.correct   .rsc-value { color: #2e7d32; }
+.rsc-item.wrong     .rsc-value { color: #c62828; }
+.rsc-item.score     .rsc-value { color: #1a73e8; }
+.rsc-item.accuracy  .rsc-value { color: #f57c00; }
+.rsc-item.rank      .rsc-value { color: #6a1b9a; }

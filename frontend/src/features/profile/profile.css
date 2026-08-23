@@ -1,0 +1,285 @@
+/* ── Profile Page ── */
+.profile-page {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  padding: 24px 24px 100px;
+}
+
+.profile-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Profile Card ── */
+.profile-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.pc-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.pc-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+
+.pc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.pc-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.pc-identity { flex: 1; }
+
+.pc-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 6px;
+}
+
+.pc-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+
+.pc-edit-btn {
+  margin-left: auto;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pc-bio {
+  font-size: 13px;
+  color: var(--text-body);
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.pc-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.pc-info-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-body);
+}
+
+.pc-info-row svg { color: var(--text-muted); flex-shrink: 0; }
+
+/* ── Picture Uploader ── */
+.pp-uploader {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.pp-avatar {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+
+.pp-img { width: 100%; height: 100%; object-fit: cover; }
+
+.pp-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.pp-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #fff;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.pp-avatar:hover .pp-overlay { opacity: 1; }
+
+.pp-spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pp-actions { display: flex; flex-direction: column; gap: 8px; }
+
+.pp-btn-change, .pp-btn-remove {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.pp-btn-change { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pp-btn-remove { background: transparent; color: var(--text-muted); }
+.pp-btn-change:disabled, .pp-btn-remove:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Form Sections ── */
+.profile-form-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.profile-form-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 16px;
+}
+
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.pf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pf-field--full { grid-column: 1 / -1; }
+
+.pf-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pf-required { color: #ef4444; margin-left: 2px; }
+.pf-optional { color: var(--text-muted); font-weight: 400; text-transform: none; }
+
+.pf-input {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-surface-2);
+  color: var(--text-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pf-input:focus { border-color: var(--accent); }
+.pf-input--error { border-color: #ef4444; }
+.pf-input--readonly { opacity: 0.6; cursor: not-allowed; background: var(--bg-main); }
+
+.pf-textarea { resize: vertical; min-height: 72px; }
+
+.pf-error { font-size: 11px; color: #ef4444; }
+.pf-char-count { font-size: 11px; color: var(--text-muted); text-align: right; }
+
+/* ── Save Bar ── */
+.save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+}
+
+.save-bar-hint { font-size: 13px; color: var(--text-muted); }
+
+.save-bar-actions { display: flex; gap: 10px; }
+
+.save-bar-cancel, .save-bar-save {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.save-bar-cancel { background: transparent; color: var(--text-body); }
+.save-bar-save   { background: var(--accent); color: #fff; border-color: var(--accent); }
+.save-bar-save:disabled, .save-bar-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .profile-form-grid { grid-template-columns: 1fr; }
+  .pc-header { flex-wrap: wrap; }
+  .pc-edit-btn { width: 100%; text-align: center; }
+}

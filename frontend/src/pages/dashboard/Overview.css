@@ -1,0 +1,158 @@
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.card-wide { grid-column: 1 / -1; }
+
+/* Today strip */
+.today-strip { display: flex; flex-direction: column; gap: 12px; }
+.today-date { font-size: 13px; color: var(--text-muted); }
+.today-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+.stat-chip {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 80px;
+}
+.stat-chip span:last-child { font-size: 11px; color: var(--text-muted); }
+.stat-num { font-size: 20px; font-weight: 700; color: var(--accent); }
+
+/* To-Do */
+.todo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.todo-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.todo-item.done .todo-text { text-decoration: line-through; color: var(--text-muted); }
+.priority-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.priority-dot.p-high { background: #ef4444; }
+.priority-dot.p-medium { background: #f59e0b; }
+.priority-dot.p-low { background: #10b981; }
+.todo-text { flex: 1; }
+.priority-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; text-transform: capitalize; }
+.priority-tag.p-high { background: rgba(239,68,68,0.12); color: #ef4444; }
+.priority-tag.p-medium { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.priority-tag.p-low { background: rgba(16,185,129,0.12); color: #10b981; }
+.quick-add-btn {
+  margin-top: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px dashed var(--accent-border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+.quick-add-btn:hover { background: var(--accent); color: #fff; }
+
+/* Study */
+.study-subject { font-size: 15px; font-weight: 700; color: var(--text-heading); margin-bottom: 2px; }
+.study-topic { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+.progress-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.progress-bar { flex: 1; height: 7px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s; }
+.progress-pct { font-size: 12px; font-weight: 700; color: var(--accent); }
+.streak-row { display: flex; align-items: center; justify-content: space-between; }
+.streak-badge { font-size: 12px; font-weight: 600; color: #f59e0b; }
+.study-muted { font-size: 12px; color: var(--text-muted); }
+
+/* Exams */
+.exam-chips { display: flex; flex-direction: column; gap: 10px; }
+.exam-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid;
+  background: var(--bg-main);
+}
+.exam-name { font-size: 13px; font-weight: 600; color: var(--text-heading); }
+.exam-days { font-size: 18px; font-weight: 800; }
+
+/* Mock */
+.mock-stats { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+.mock-score { font-size: 36px; font-weight: 800; color: var(--accent); line-height: 1; }
+.mock-score span { font-size: 16px; color: var(--text-muted); font-weight: 400; }
+.mock-meta { display: flex; flex-direction: column; gap: 4px; }
+.mock-acc, .mock-time { font-size: 12px; color: var(--text-muted); }
+
+/* Time */
+.time-chart-wrap { display: flex; align-items: center; gap: 12px; }
+.time-legend { display: flex; flex-direction: column; gap: 5px; }
+.time-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-body); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-val { margin-left: auto; font-weight: 600; color: var(--text-heading); padding-left: 8px; }
+
+/* Budget */
+.budget-balance { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+.budget-balance strong { color: #10b981; font-size: 16px; }
+
+/* Health rings */
+.health-rings { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-around; }
+.ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+.ring-wrap svg { display: block; }
+.ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+.ring-val { font-size: 12px; font-weight: 700; color: var(--text-heading); }
+.ring-unit { font-size: 9px; color: var(--text-muted); }
+.ring-name { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+/* Watchlist */
+.watchlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.watchlist-item { display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.watchlist-item:last-child { border-bottom: none; padding-bottom: 0; }
+.watchlist-name { font-size: 13px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 6px; }
+.watchlist-type { font-size: 10px; background: var(--accent-bg); color: var(--accent); padding: 1px 6px; border-radius: 20px; font-weight: 600; }
+.watchlist-action { font-size: 12px; color: var(--text-muted); }
+
+/* Notifications */
+.notif-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.notif-item { display: flex; align-items: flex-start; gap: 10px; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.notif-dot.type-exam { background: #6366f1; }
+.notif-dot.type-budget { background: #10b981; }
+.notif-dot.type-career { background: #f59e0b; }
+.notif-text { font-size: 13px; color: var(--text-body); }
+.notif-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Motivation */
+.motivation-wrap { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.quote-block { flex: 1; min-width: 200px; }
+.quote-mark { font-size: 48px; color: var(--accent); line-height: 0.5; display: block; margin-bottom: 8px; opacity: 0.4; }
+.quote-text { font-size: 15px; font-style: italic; color: var(--text-body); line-height: 1.6; margin: 0; }
+.vision-placeholders { display: flex; gap: 10px; }
+.vision-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background: var(--accent-bg);
+  border: 1.5px dashed var(--accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .overview-grid { grid-template-columns: 1fr; }
+  .card-wide { grid-column: 1; }
+  .today-stats { gap: 8px; }
+  .stat-chip { min-width: 60px; padding: 8px 10px; }
+}

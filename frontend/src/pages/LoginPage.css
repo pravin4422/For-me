@@ -1,0 +1,366 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.login-page-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  background: url('https://images.wallpapersden.com/image/download/firewatch-new-hd-22-art_bWpubm2UmZqaraWkpJRnamtlrWZpaWU.jpg') no-repeat center center / cover;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 30px 40px;
+  color: #fff;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ── Brand ── */
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.login-brand-icon {
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.login-brand-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+/* ── Headings ── */
+.login-heading {
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.login-subtext {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+/* ── Tab switch ── */
+.login-tab-switch {
+  display: flex;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 9px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background 0.2s, color 0.2s;
+}
+
+.login-tab--active {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+/* ── Form ── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 30px;
+}
+
+.login-label {
+  display: none;
+}
+
+/* ── Inputs ── */
+.login-input {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 16px;
+  color: #fff;
+  padding: 0 45px 0 20px;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.login-input::placeholder {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.login-input:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Phone input ── */
+.login-phone-wrap {
+  display: flex;
+  align-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  overflow: hidden;
+  height: 50px;
+  transition: border-color 0.2s;
+}
+
+.login-phone-wrap:focus-within {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.login-phone-prefix {
+  padding: 0 12px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  user-select: none;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-input--phone {
+  border: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  height: 100%;
+}
+
+.login-input--phone:focus {
+  border-color: transparent;
+}
+
+/* ── Password wrap ── */
+.login-password-wrap {
+  position: relative;
+}
+
+.login-password-wrap .login-input {
+  padding-right: 50px;
+}
+
+.login-eye-btn {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  font-size: 18px;
+}
+
+.login-eye-btn:hover {
+  color: #fff;
+}
+
+/* ── Forgot password ── */
+.login-forgot-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* ── Link button ── */
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  transition: opacity 0.2s;
+  text-decoration: none;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+/* ── Remember me row ── */
+.login-remember-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14.5px;
+  margin: -10px 0 20px;
+}
+
+.login-remember-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.login-remember-row input[type='checkbox'] {
+  accent-color: #fff;
+}
+
+/* ── Error ── */
+.login-error {
+  font-size: 13px;
+  color: #fff;
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  background: rgba(217, 48, 37, 0.45);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  border-radius: 40px;
+}
+
+/* ── Primary button ── */
+.login-button {
+  width: 100%;
+  height: 45px;
+  background: #fff;
+  color: #333;
+  border: none;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.login-button:hover:not(:disabled) {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Divider ── */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.login-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.login-divider-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Google button ── */
+.login-google-btn {
+  width: 100%;
+  height: 45px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.login-google-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.login-google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Signup redirect ── */
+.login-signup-text {
+  font-size: 14.5px;
+  color: #fff;
+  text-align: center;
+  margin: 20px 0 0;
+}
+
+.login-signup-text .link-btn {
+  font-weight: 600;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 24px;
+  }
+
+  .login-heading {
+    font-size: 28px;
+  }
+}

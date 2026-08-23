@@ -1,0 +1,350 @@
+.health-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+.health-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.health-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-heading);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.health-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 3px 0 0;
+}
+
+/* Summary Strip */
+.health-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.summary-badge {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.summary-ring-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary-ring-pct {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  pointer-events: none;
+}
+
+.summary-badge-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.summary-badge-icon {
+  display: flex;
+  align-items: center;
+}
+
+.summary-badge-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.summary-badge-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-heading);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tracker Grid */
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Meal note */
+.meal-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-main);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+/* Calorie delta */
+.cal-delta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.cal-delta--up {
+  color: #5f59f7;
+  background: #5f59f712;
+}
+
+.cal-delta--down {
+  color: #44c2fd;
+  background: #44c2fd12;
+}
+
+/* Section card (checklist + trends) */
+.health-section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.health-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.health-section-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.health-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-heading);
+  flex: 1;
+}
+
+/* Checklist */
+.checklist-score {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-radius: 20px;
+  padding: 2px 10px;
+}
+
+.checklist-progress-bar {
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.checklist-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5f59f7, #44c2fd);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.checklist-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: default;
+  transition: background 0.12s;
+}
+
+.checklist-item[style], .checklist-item:has(.checklist-manual) {
+  cursor: pointer;
+}
+
+.checklist-item:hover {
+  background: var(--bg-main);
+}
+
+.checklist-item--done .checklist-label {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.checklist-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.checklist-box--checked {
+  background: #5f59f7;
+  border-color: #5f59f7;
+  color: #fff;
+}
+
+.checklist-label {
+  font-size: 13px;
+  color: var(--text-body);
+  flex: 1;
+}
+
+.checklist-manual {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Trends */
+.trends-chart-wrap {
+  width: 100%;
+}
+
+.trends-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .health-summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .health-summary-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .health-title {
+    font-size: 22px;
+  }
+
+  .htc-log-row--workout {
+    flex-wrap: wrap;
+  }
+}
+
+/* Medical Conditions */
+.medical-checkup-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.medical-checkup-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  background: var(--bg-main);
+  font-size: 12px;
+}
+
+.medical-checkup-name {
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.medical-checkup-date {
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.medical-add-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: var(--bg-main);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.medical-color-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.medical-color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.medical-color-dot--active {
+  border-color: var(--text-heading);
+  transform: scale(1.2);
+}
+
+.medical-conditions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

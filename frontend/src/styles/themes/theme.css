@@ -1,0 +1,14 @@
+:root,
+[data-theme="light"] {
+  --bg-main:    #ffffff;
+  --text-main:  #222222;
+  --text-muted: #555555;
+  --accent:     #c5b3d3;
+}
+
+[data-theme="dark"] {
+  --bg-main:    #121212;
+  --text-main:  #fbefef;
+  --text-muted: #f5cbcb;
+  --accent:     #ffe2e2;
+}

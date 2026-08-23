@@ -1,0 +1,201 @@
+.htc {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.htc-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.htc-ring-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.htc-ring-pct {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.htc-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.htc-label-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 2px;
+}
+
+.htc-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.htc-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.1px;
+}
+
+.htc-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #343090;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.htc-goal {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.htc-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.htc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.htc-log-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.htc-log-row--workout {
+  flex-wrap: wrap;
+}
+
+.htc-input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--text-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.htc-input:focus {
+  border-color: #5f59f7;
+}
+
+.htc-input--sm {
+  max-width: 72px;
+  flex: none;
+}
+
+.htc-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.htc-add-btn:hover { opacity: 0.85; }
+
+.htc-quick-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.htc-quick {
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1.5px solid;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.htc-quick:hover {
+  background: currentColor;
+  color: #fff !important;
+  filter: brightness(1.1);
+}
+
+.workout-log-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.workout-log-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-body);
+}
+
+.workout-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.workout-type {
+  flex: 1;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.workout-dur {
+  font-size: 12px;
+  color: var(--text-muted);
+}

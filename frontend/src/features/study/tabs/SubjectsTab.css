@@ -1,0 +1,68 @@
+/* SubjectsTab.css */
+/* tab-container, tab-header, tab-header__left, tab-empty, btn-primary, icon-btn → TabShared.css */
+/* subject-card, subject-card__* → SubjectCard.css */
+/* doc-uploader, doc-list, doc-list__* → DocumentUploader.css */
+/* modal-overlay, modal, modal__* → AddSubjectModal.css */
+
+.subjects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subject-docs {
+  margin: 0 0 8px 50px;
+  padding: 14px 16px;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.doc-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  transition: border-color 0.15s;
+}
+.doc-list__item--frequent {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+}
+
+.doc-list__name {
+  font-size: 13px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.doc-list__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .subject-docs { margin-left: 0; }
+}

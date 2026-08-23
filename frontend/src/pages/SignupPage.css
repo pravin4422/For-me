@@ -1,0 +1,370 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.signup-page-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  background: url('https://images.wallpapersden.com/image/download/firewatch-new-hd-22-art_bWpubm2UmZqaraWkpJRnamtlrWZpaWU.jpg') no-repeat center center / cover;
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 420px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 30px 40px;
+  color: #fff;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ── Brand ── */
+.signup-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.signup-brand-icon {
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.signup-brand-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+/* ── Headings ── */
+.signup-heading {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.signup-subtext {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+/* ── Form ── */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.signup-label {
+  display: none;
+}
+
+/* ── Inputs ── */
+.signup-input {
+  width: 100%;
+  height: 50px;
+  background: transparent;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 16px;
+  color: #fff;
+  padding: 0 45px 0 20px;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.signup-input::placeholder {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.signup-input:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.signup-input--error {
+  border-color: rgba(255, 100, 100, 0.7);
+}
+
+/* ── Field-level error ── */
+.signup-field-error {
+  font-size: 12px;
+  color: rgba(255, 180, 180, 1);
+  margin-top: 6px;
+  padding-left: 8px;
+}
+
+/* ── Password hint ── */
+.signup-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 6px;
+  padding-left: 8px;
+}
+
+/* ── Password wrap ── */
+.signup-password-wrap {
+  position: relative;
+}
+
+.signup-password-wrap .signup-input {
+  padding-right: 50px;
+}
+
+.signup-eye-btn {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  transition: color 0.2s;
+}
+
+.signup-eye-btn:hover {
+  color: #fff;
+}
+
+/* ── Form-level error ── */
+.signup-error {
+  font-size: 13px;
+  color: #fff;
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  background: rgba(217, 48, 37, 0.45);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  border-radius: 40px;
+}
+
+/* ── Primary button ── */
+.signup-button {
+  width: 100%;
+  height: 45px;
+  background: #fff;
+  color: #333;
+  border: none;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.signup-button:hover:not(:disabled) {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.signup-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Divider ── */
+.signup-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.signup-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.signup-divider-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Google button ── */
+.signup-google-btn {
+  width: 100%;
+  height: 45px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.signup-google-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.signup-google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Link button ── */
+.signup-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.signup-link-btn:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+/* ── Login redirect ── */
+.signup-redirect-text {
+  font-size: 14.5px;
+  color: #fff;
+  text-align: center;
+  margin: 20px 0 0;
+}
+
+/* ── Email Verify Step ── */
+.signup-verify-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: 8px;
+  text-align: center;
+}
+
+.signup-verify-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.signup-verify-hint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+.signup-verify-step .signup-button {
+  width: 100%;
+}
+
+/* ── OTP Step ── */
+.signup-otp-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.signup-otp-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+  margin: 0;
+}
+
+.signup-otp-boxes {
+  display: flex;
+  gap: 10px;
+}
+
+.signup-otp-input {
+  width: 44px;
+  height: 50px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.signup-otp-input:focus {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.signup-otp-step .signup-button {
+  width: 100%;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .signup-card {
+    padding: 30px 24px;
+  }
+
+  .signup-heading {
+    font-size: 26px;
+  }
+
+  .signup-otp-input {
+    width: 38px;
+    height: 44px;
+    font-size: 18px;
+  }
+}

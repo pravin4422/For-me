@@ -1,0 +1,15 @@
+import { BookOpen, Zap, Brain } from 'lucide-react';
+import ModulePage from '../../components/common/ModulePage';
+export const StudyPlanner = () => <ModulePage title="Study Planner" icon={<BookOpen size={32} />} description="No study plan yet — create your first plan." />;
+export const Subjects = () => <ModulePage title="Subjects" icon={<BookOpen size={32} />} description="No subjects added yet." />;
+export const Topics = () => <ModulePage title="Topics" icon={<BookOpen size={32} />} description="No topics added yet." />;
+export const RevisionTracker = () => <ModulePage title="Revision Tracker" icon={<BookOpen size={32} />} description="No revisions tracked yet." />;
+export const Practice = () => <ModulePage title="Practice" icon={<BookOpen size={32} />} description="No practice sessions yet." />;
+export const StudyMockTests = () => <ModulePage title="Mock Tests" icon={<BookOpen size={32} />} description="No mock tests yet." />;
+export const StudyAnalysis = () => <ModulePage title="Analysis" icon={<Brain size={32} />} description="No analysis data yet." />;
+export const SpeedMathFormulas = () => <ModulePage title="Formulas" icon={<Zap size={32} />} description="No formulas added yet." />;
+export const SpeedMathTables = () => <ModulePage title="Tables" icon={<Zap size={32} />} description="No tables added yet." />;
+export const SpeedMathSquares = () => <ModulePage title="Squares & Cubes" icon={<Zap size={32} />} description="No content yet." />;
+export const SpeedMathMulDiv = () => <ModulePage title="Multiplication / Division" icon={<Zap size={32} />} description="No content yet." />;
+export const SpeedMathFractions = () => <ModulePage title="Fractions" icon={<Zap size={32} />} description="No content yet." />;
+export const SpeedMathBasic = () => <ModulePage title="Basic Calculations" icon={<Zap size={32} />} description="No content yet." />;

@@ -1,0 +1,9 @@
+.result-page { padding: 24px 16px; background: var(--bg-secondary, #f5f7fa); min-height: 100%; }
+.result-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.result-heading { margin: 0; font-size: 22px; color: var(--text-primary, #222); }
+.result-loading { display: flex; align-items: center; justify-content: center; height: 60vh; font-size: 16px; color: var(--text-secondary, #666); }
+.result-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.result-actions button { padding: 10px 22px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn-analysis  { background: #1a73e8; color: #fff; }
+.btn-retake    { background: #ff9800; color: #fff; }
+.btn-dashboard { background: var(--bg-primary, #fff); color: var(--text-primary, #333); border: 1.5px solid var(--border, #ccc) !important; }

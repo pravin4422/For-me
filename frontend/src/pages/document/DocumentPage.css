@@ -1,0 +1,571 @@
+/* ── Documents Page — palette-scoped styles ──────────────── */
+:root {
+  --doc-indigo: #343090;
+  --doc-violet: #5f59f7;
+  --doc-blue:   #6592fd;
+  --doc-sky:    #44c2fd;
+  --doc-purple: #8c61ff;
+}
+
+.doc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+}
+
+/* ── header ──────────────────────────────────────────────── */
+.doc-header {
+  background: linear-gradient(135deg, var(--doc-indigo) 0%, var(--doc-violet) 100%);
+  border-radius: 16px;
+  padding: 24px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #fff;
+}
+
+.doc-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.doc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.doc-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.doc-upload-btn:hover { background: rgba(255,255,255,0.28); }
+
+.doc-section .doc-upload-btn {
+  background: linear-gradient(135deg, var(--doc-indigo), var(--doc-violet));
+  color: #fff;
+}
+
+.doc-search-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.doc-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.doc-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.6);
+  pointer-events: none;
+}
+
+.doc-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 32px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.doc-search-input::placeholder { color: rgba(255,255,255,0.55); }
+.doc-search-input:focus { border-color: rgba(255,255,255,0.5); }
+
+.doc-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+}
+
+.doc-filter-select {
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.doc-filter-select option { background: var(--doc-indigo); color: #fff; }
+
+/* ── frequently used strip ───────────────────────────────── */
+.doc-frequent-strip {
+  background: var(--bg-surface);
+  border: 1px solid rgba(68,194,253,0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.doc-frequent-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--doc-sky);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+}
+
+.doc-frequent-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.doc-frequent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 20px;
+  background: rgba(68,194,253,0.1);
+  border: 1px solid rgba(68,194,253,0.25);
+  font-size: 12px;
+  color: var(--text-body);
+  max-width: 200px;
+}
+
+.doc-frequent-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.doc-frequent-unpin {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.doc-frequent-unpin:hover { color: #ef4444; }
+
+/* ── category tabs ───────────────────────────────────────── */
+.doc-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 5px;
+  flex-wrap: wrap;
+}
+
+.doc-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.doc-tab:hover { background: rgba(95,89,247,0.08); color: var(--doc-violet); }
+
+.doc-tab.active {
+  background: linear-gradient(135deg, var(--doc-indigo), var(--doc-violet));
+  color: #fff;
+  font-weight: 600;
+}
+
+.doc-tab-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.2);
+}
+
+.doc-tab:not(.active) .doc-tab-count {
+  background: rgba(95,89,247,0.1);
+  color: var(--doc-violet);
+}
+
+/* ── section ─────────────────────────────────────────────── */
+.doc-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  min-height: 200px;
+}
+
+/* ── file grid ───────────────────────────────────────────── */
+.doc-file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* ── document card ───────────────────────────────────────── */
+.doc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  position: relative;
+  cursor: pointer;
+}
+
+.doc-card:hover {
+  border-color: var(--doc-violet);
+  box-shadow: 0 2px 12px rgba(95,89,247,0.1);
+  background: rgba(95,89,247,0.04);
+}
+
+.doc-card--pinned {
+  border-color: rgba(68,194,253,0.3);
+  background: linear-gradient(135deg, rgba(68,194,253,0.04), rgba(95,89,247,0.03));
+}
+
+.doc-card-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.doc-type-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.doc-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.doc-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-card-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.doc-rename-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.doc-rename-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--doc-violet);
+  border-radius: 6px;
+  background: var(--bg-main);
+  color: var(--text-body);
+  font-size: 12px;
+  outline: none;
+  min-width: 0;
+}
+
+.doc-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* ── icon buttons ────────────────────────────────────────── */
+.doc-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+
+.doc-icon-btn:hover     { background: rgba(95,89,247,0.1); color: var(--doc-violet); }
+.doc-icon-btn.red:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.doc-pin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+
+.doc-pin-btn:hover { color: var(--doc-sky); }
+.doc-pin-btn.active { color: var(--doc-sky); }
+
+/* ── context menu ────────────────────────────────────────── */
+.doc-menu-wrap { position: relative; }
+
+.doc-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 100;
+  min-width: 150px;
+  overflow: visible;
+  padding: 4px;
+}
+
+.doc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-body);
+  border-radius: 6px;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.doc-menu-item:hover { background: rgba(95,89,247,0.08); color: var(--doc-violet); }
+.doc-menu-item--danger:hover { background: rgba(239,68,68,0.08); color: #ef4444; }
+
+.doc-menu-move { cursor: pointer; }
+
+.doc-submenu {
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+  padding-top: 2px;
+}
+
+/* ── image grid ──────────────────────────────────────────── */
+.doc-img-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.doc-img-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-main);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.doc-img-card:hover { border-color: var(--doc-blue); box-shadow: 0 4px 16px rgba(101,146,253,0.12); }
+
+.doc-img-thumb-wrap {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.doc-img-thumb {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.15s;
+}
+
+.doc-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(52,48,144,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.doc-img-thumb-wrap:hover .doc-img-overlay { opacity: 1; }
+.doc-img-thumb-wrap:hover .doc-img-thumb   { opacity: 0.85; }
+
+.doc-img-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+.doc-img-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.doc-img-actions { display: flex; gap: 2px; }
+
+/* ── empty state ─────────────────────────────────────────── */
+.doc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.doc-empty p { margin: 0; }
+
+/* ── modal ───────────────────────────────────────────────── */
+.doc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.doc-modal {
+  position: relative;
+  background: var(--bg-surface);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 720px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.doc-modal-close {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1;
+}
+
+.doc-modal-img {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  display: block;
+}
+
+.doc-modal-caption {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+}
+
+/* ── responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .doc-file-grid { grid-template-columns: 1fr; }
+  .doc-img-grid  { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .doc-tabs      { gap: 2px; padding: 4px; }
+  .doc-tab       { padding: 7px 10px; font-size: 12px; }
+}
+
+@media (max-width: 640px) {
+  .doc-header    { padding: 18px 16px 16px; }
+  .doc-title     { font-size: 17px; }
+  .doc-search-row { flex-direction: column; }
+  .doc-filter-select { width: 100%; }
+  .doc-img-grid  { grid-template-columns: 1fr 1fr; }
+  .doc-section   { padding: 14px; }
+}

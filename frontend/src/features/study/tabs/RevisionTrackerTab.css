@@ -1,0 +1,31 @@
+/* RevisionTrackerTab.css */
+/* tab-container, tab-header, tab-header__left, tab-empty → TabShared.css */
+/* revision-counter, revision-counter__* → RevisionCounter.css */
+
+.revision-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.revision-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: box-shadow 0.15s;
+}
+.revision-row:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.revision-row__name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-body);
+  flex: 1;
+}

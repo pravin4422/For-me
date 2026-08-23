@@ -1,0 +1,251 @@
+/* speed-math.css — shared styles for speed-math feature */
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.sm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+.sm-btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.sm-btn--primary:hover { opacity: 0.88; }
+
+/* ── Loading ─────────────────────────────────────────────── */
+.sm-loading {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+/* ── Study Section ───────────────────────────────────────── */
+.study-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Formula cards ───────────────────────────────────────── */
+.formula-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.formula-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.formula-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 6px;
+}
+.formula-card__content {
+  font-size: 13px;
+  color: var(--text-body);
+  margin: 0;
+  font-family: monospace;
+}
+
+/* ── Tables selector ─────────────────────────────────────── */
+.tables-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.tables-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 260px;
+}
+.tables-selector__btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-surface);
+  color: var(--text-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.tables-selector__btn.active,
+.tables-selector__btn:hover {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.tables-display {
+  flex: 1;
+  min-width: 180px;
+}
+.tables-display__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0 0 10px;
+}
+.tables-display__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tables-display__row {
+  display: grid;
+  grid-template-columns: 80px 20px 60px;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-body);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.tables-display__row:hover { background: var(--bg-surface-2); }
+.tables-display__result { font-weight: 600; color: var(--accent); }
+
+/* ── Squares/Cubes & Fractions table ─────────────────────── */
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.sc-table th,
+.sc-table td {
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-body);
+}
+.sc-table th {
+  font-weight: 600;
+  color: var(--text-heading);
+  background: var(--bg-surface-2);
+}
+.sc-table tr:hover td { background: var(--bg-surface-2); }
+
+/* ── Practice Section ────────────────────────────────────── */
+.practice-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.practice-section--empty {
+  align-items: center;
+  padding: 48px 0;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Practice Question Card ──────────────────────────────── */
+.pq-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.15s;
+}
+.pq-card.correct { border-color: #22c55e; background: rgba(34,197,94,0.05); }
+.pq-card.wrong   { border-color: #ef4444; background: rgba(239,68,68,0.05); }
+.pq-card__num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 20px;
+  padding-top: 2px;
+}
+.pq-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.pq-card__question {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-heading);
+  margin: 0;
+}
+.pq-card__input {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-surface-2);
+  color: var(--text-body);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  max-width: 200px;
+}
+.pq-card__input:focus { border-color: var(--accent); }
+.pq-card__input:disabled { opacity: 0.7; cursor: not-allowed; }
+.pq-card__feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.pq-card.correct .pq-card__feedback { color: #22c55e; }
+.pq-card.wrong   .pq-card__feedback { color: #ef4444; }
+
+/* ── Score Summary ───────────────────────────────────────── */
+.score-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+}
+.score-summary__icon { color: var(--accent); }
+.score-summary__grade {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+}
+.score-summary__stat {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.score-summary__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 7px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+.score-summary__retry:hover { opacity: 0.88; }

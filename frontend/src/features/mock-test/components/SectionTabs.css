@@ -1,0 +1,5 @@
+.section-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border, #e0e0e0); overflow-x: auto; }
+.section-tab { padding: 10px 18px; border: none; background: none; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-secondary, #666); border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+.section-tab:hover { color: #1a73e8; }
+.section-tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.sec-count { font-size: 10px; background: var(--bg-secondary, #f0f4ff); color: var(--text-secondary, #555); padding: 1px 5px; border-radius: 10px; }

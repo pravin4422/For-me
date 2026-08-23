@@ -1,0 +1,13 @@
+.exam-screen { display: flex; flex-direction: column; height: 100vh; background: var(--bg-secondary, #f5f7fa); overflow: hidden; }
+.exam-topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #1a237e; color: #fff; flex-shrink: 0; gap: 12px; }
+.exam-name { font-size: 15px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn-submit-test { background: #f44336; color: #fff; border: none; padding: 8px 20px; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.exam-body { display: grid; grid-template-columns: 1fr 260px; gap: 12px; padding: 12px; flex: 1; overflow: hidden; }
+.exam-main { overflow-y: auto; }
+.exam-sidebar { overflow-y: auto; }
+.exam-loading { display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 16px; color: var(--text-secondary, #666); }
+
+@media (max-width: 768px) {
+  .exam-body { grid-template-columns: 1fr; }
+  .exam-sidebar { order: -1; max-height: 200px; }
+}

@@ -1,0 +1,41 @@
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  background: var(--bg-surface, #fff);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.notif-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.notif-dropdown__title { font-size: 14px; font-weight: 700; color: var(--text-heading); }
+.notif-dropdown__mark-all {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--accent);
+  background: none; border: none; cursor: pointer;
+}
+.notif-dropdown__mark-all:hover { text-decoration: underline; }
+
+.notif-dropdown__list { max-height: 380px; overflow-y: auto; }
+
+.notif-dropdown__view-all {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  border-top: 1px solid var(--border);
+  text-decoration: none;
+}
+.notif-dropdown__view-all:hover { background: var(--accent-bg); }
