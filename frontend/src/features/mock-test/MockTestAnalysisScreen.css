@@ -1,27 +1,27 @@
-.analysis-page { padding: 24px 16px; background: var(--bg-secondary, #f5f7fa); min-height: 100%; }
+.analysis-page { padding: 24px 16px; background: var(--bg-main); min-height: 100%; }
 .analysis-content { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
 .analysis-header { display: flex; align-items: center; justify-content: space-between; }
-.analysis-header h2 { margin: 0; font-size: 20px; color: var(--text-primary, #222); }
-.btn-back-result { background: none; border: 1.5px solid var(--border, #ccc); padding: 7px 16px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600; }
-.analysis-section { background: var(--bg-primary, #fff); border: 1px solid var(--border, #e0e0e0); border-radius: 10px; padding: 20px; }
-.analysis-section h4 { margin: 0 0 14px; font-size: 15px; color: var(--text-primary, #222); }
-.analysis-loading { display: flex; align-items: center; justify-content: center; height: 60vh; font-size: 16px; color: var(--text-secondary, #666); }
+.analysis-header h2 { margin: 0; font-size: 20px; color: var(--text-heading); }
+.btn-back-result { background: none; border: 1.5px solid var(--border); padding: 7px 16px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-body); }
+.analysis-section { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.analysis-section h4 { margin: 0 0 14px; font-size: 15px; color: var(--text-heading); }
+.analysis-loading { display: flex; align-items: center; justify-content: center; height: 60vh; font-size: 16px; color: var(--text-muted); }
 
 .qreview-card { display: flex; flex-direction: column; gap: 14px; }
-.qr-text { font-size: 15px; line-height: 1.6; margin: 0; color: var(--text-primary, #222); }
+.qr-text { font-size: 15px; line-height: 1.6; margin: 0; color: var(--text-heading); }
 .qr-options { display: flex; flex-direction: column; gap: 8px; }
-.qr-opt { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 6px; border: 1.5px solid var(--border, #e0e0e0); font-size: 14px; }
-.qr-opt.correct-opt { border-color: #4caf50; background: #e8f5e9; }
-.qr-opt.wrong-opt   { border-color: #f44336; background: #ffebee; }
+.qr-opt { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 6px; border: 1.5px solid var(--border); font-size: 14px; color: var(--text-body); }
+.qr-opt.correct-opt { border-color: #4caf50; background: rgba(76,175,80,0.1); }
+.qr-opt.wrong-opt   { border-color: #f44336; background: rgba(244,67,54,0.1); }
 .tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; margin-left: auto; }
 .correct-tag      { background: #4caf50; color: #fff; }
 .wrong-tag        { background: #f44336; color: #fff; }
-.your-correct-tag { background: #1a73e8; color: #fff; }
-.qr-explanation { background: #fff8e1; border-left: 3px solid #ff9800; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #555; }
+.your-correct-tag { background: var(--accent); color: var(--bg-main); }
+.qr-explanation { background: var(--accent-bg); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 4px; font-size: 13px; color: var(--text-body); }
 .qr-nav { display: flex; align-items: center; gap: 12px; justify-content: center; }
-.qr-nav button { padding: 7px 18px; border-radius: 5px; border: 1.5px solid var(--border, #ccc); background: none; cursor: pointer; font-size: 13px; font-weight: 600; }
+.qr-nav button { padding: 7px 18px; border-radius: 5px; border: 1.5px solid var(--border); background: none; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-body); }
 .qr-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
-.qr-nav span { font-size: 13px; color: var(--text-secondary, #666); }
+.qr-nav span { font-size: 13px; color: var(--text-muted); }
 
 .revision-box ul { padding-left: 18px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.revision-box li { font-size: 13px; color: var(--text-primary, #333); line-height: 1.5; }
+.revision-box li { font-size: 13px; color: var(--text-body); line-height: 1.5; }

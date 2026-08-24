@@ -13,15 +13,15 @@
   justify-content: center;
   transition: background 0.15s;
 }
-.notif-bell:hover { background: var(--bg-hover, #f0f0ff); }
+.notif-bell:hover { background: var(--accent-bg); }
 
 .notif-bell__badge {
   position: absolute;
   top: 1px; right: 1px;
   min-width: 16px; height: 16px;
   padding: 0 4px;
-  background: #ef4444;
-  color: #fff;
+  background: var(--accent);
+  color: var(--bg-main);
   font-size: 9px;
   font-weight: 700;
   border-radius: 8px;

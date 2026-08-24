@@ -204,7 +204,7 @@ function NavItem({ item, collapsed, depth = 0 }) {
   // auto-open if any descendant is active (recursive)
   function hasActiveDescendant(children) {
     return children.some(c =>
-      (c.path && pathname.startsWith(c.path)) ||
+      (c.path && (c.children ? pathname.startsWith(c.path) : pathname === c.path)) ||
       (c.children && hasActiveDescendant(c.children))
     );
   }

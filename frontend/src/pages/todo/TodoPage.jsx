@@ -6,6 +6,8 @@ import {
   Tag, Calendar, Flag, Filter, Repeat
 } from 'lucide-react';
 import useReminderScheduler from '../../hooks/useReminderScheduler';
+import { getTodos, createTodo, updateTodo, deleteTodo, toggleTodo } from '../../api/todo/index.js';
+import TodoDetail from './TodoDetail';
 import './TodoPage.css';
 
 // ── palette ────────────────────────────────────────────────
@@ -36,23 +38,15 @@ const REPEAT_OPTIONS = ['none', 'daily', 'weekly', 'monthly', 'yearly'];
 const EMPTY_DRAFT = {
   title: '', priority: 'Medium', dueDate: '', category: 'Personal',
   reminder: '', reminderTime: '', reminderEnabled: false,
-  completed: false, overdue: false, repeat: 'none',
+  completed: false, overdue: false, repeat: 'none', taskType: 'ONE_TIME',
+  description: '',
 };
-
-function nextDueDate(dueDateStr, repeat) {
-  if (!dueDateStr || repeat === 'none') return '';
-  const d = new Date(dueDateStr);
-  if (repeat === 'daily')   d.setDate(d.getDate() + 1);
-  if (repeat === 'weekly')  d.setDate(d.getDate() + 7);
-  if (repeat === 'monthly') d.setMonth(d.getMonth() + 1);
-  if (repeat === 'yearly')  d.setFullYear(d.getFullYear() + 1);
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-}
 
 // ── helpers ────────────────────────────────────────────────
 function isInTab(task, tab) {
-  if (!task.dueDate) return tab === 'Daily';
+  if (!task.dueDate) return true;
   const due = new Date(task.dueDate);
+  if (isNaN(due)) return true;
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfDay   = new Date(startOfDay.getTime() + 86400000 - 1);
@@ -224,6 +218,14 @@ function TaskForm({ draft, onChange, onSave, onCancel, isEdit }) {
         )}
       </div>
 
+      <textarea
+        className="td-input td-textarea"
+        placeholder="Description (optional)"
+        value={draft.description || ''}
+        onChange={e => onChange('description', e.target.value)}
+        rows={3}
+      />
+
       <div className="td-form-actions">
         <button className="td-btn-primary" onClick={onSave}>
           <Check size={13} /> {isEdit ? 'Update' : 'Add Task'}
@@ -237,7 +239,7 @@ function TaskForm({ draft, onChange, onSave, onCancel, isEdit }) {
 }
 
 // ── TaskCard ───────────────────────────────────────────────
-function TaskCard({ task, onComplete, onEdit, onDelete }) {
+function TaskCard({ task, onComplete, onEdit, onDelete, onSelect, selected }) {
   const p = PRIORITY[task.priority] || PRIORITY.Medium;
   return (
     <div className={`td-card ${task.completed ? 'td-card--done' : ''} ${task.overdue && !task.completed ? 'td-card--overdue' : ''}`}>
@@ -253,7 +255,10 @@ function TaskCard({ task, onComplete, onEdit, onDelete }) {
 
       <div className="td-card-body">
         <div className="td-card-top">
-          <span className={`td-card-title ${task.completed ? 'td-card-title--done' : ''}`}>{task.title}</span>
+          <button
+            className={`td-card-title-btn ${task.completed ? 'td-card-title--done' : ''}`}
+            onClick={() => onSelect(task)}
+          >{task.title}</button>
           {task.overdue && !task.completed && (
             <span className="td-overdue-badge"><AlertCircle size={11} /> Overdue</span>
           )}
@@ -295,7 +300,7 @@ function TaskCard({ task, onComplete, onEdit, onDelete }) {
 }
 
 // ── TaskList ───────────────────────────────────────────────
-function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEdit, onDelete }) {
+function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEdit, onDelete, onSelect, selectedId }) {
   const [showCompleted, setShowCompleted] = useState(false);
 
   const tabTasks = tasks.filter(t => isInTab(t, tab));
@@ -307,6 +312,13 @@ function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEd
   const pending   = filtered.filter(t => !t.completed);
   const completed = filtered.filter(t => t.completed);
 
+  useEffect(() => {
+    if (selectedId && completed.find(t => t.id === selectedId)) {
+      setShowCompleted(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
+
   if (tabTasks.length === 0) {
     return (
       <div className="td-empty">
@@ -316,14 +328,16 @@ function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEd
     );
   }
 
+  const renderCard = (t) => (
+    <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} selected={selectedId === t.id} />
+  );
+
   return (
     <div className="td-list">
       {pending.length === 0 && completed.length > 0 && (
         <div className="td-empty td-empty--sm">All tasks completed!</div>
       )}
-      {pending.map(t => (
-        <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={onEdit} onDelete={onDelete} />
-      ))}
+      {pending.map(t => renderCard(t))}
 
       {completed.length > 0 && (
         <div className="td-completed-section">
@@ -332,9 +346,7 @@ function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEd
             Completed ({completed.length})
             {showCompleted ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
-          {showCompleted && completed.map(t => (
-            <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={onEdit} onDelete={onDelete} />
-          ))}
+          {showCompleted && completed.map(t => renderCard(t))}
         </div>
       )}
     </div>
@@ -372,14 +384,23 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
 
   const switchTab = (t) => { setTab(t); navigate(TAB_PATHS[t]); };
 
-  const [tasks, setTasks]         = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
+
+  useEffect(() => {
+    getTodos()
+      .then(r => setTasks(r.data.data.map(t => ({ ...t, id: t._id }))))
+      .catch(() => {})
+      .finally(() => setLoadingTasks(false));
+  }, []);
   const [showForm, setShowForm]   = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft]         = useState(EMPTY_DRAFT);
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showFilters, setShowFilters]       = useState(false);
-  const [toasts, setToasts]       = useState([]);
+  const [toasts, setToasts]   = useState([]);
+  const [detailTaskId, setDetailTaskId] = useState(null);
 
   const setField = (k, v) => setDraft(p => ({ ...p, [k]: v }));
 
@@ -389,43 +410,49 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
     setDraft({ ...task });
     setEditingId(task.id);
     setShowForm(true);
+    setDetailTaskId(null);
   };
   const cancelForm = () => { setShowForm(false); setEditingId(null); };
 
-  const saveTask = () => {
+  const saveTask = async () => {
     if (!draft.title.trim()) return;
-    if (editingId) {
-      setTasks(p => p.map(t => t.id === editingId ? { ...t, ...draft } : t));
-    } else {
-      setTasks(p => [...p, { ...draft, id: Date.now().toString() }]);
-    }
-    setShowForm(false);
-    setEditingId(null);
-    setDraft(EMPTY_DRAFT);
+    const taskType = draft.repeat && draft.repeat !== 'none' ? 'RECURRING' : 'ONE_TIME';
+    const payload = { ...draft, taskType };
+    try {
+      if (editingId) {
+        const r = await updateTodo(editingId, payload);
+        const updated = { ...r.data.data, id: r.data.data._id };
+        setTasks(p => p.map(t => t.id === editingId ? updated : t));
+      } else {
+        const r = await createTodo(payload);
+        const created = { ...r.data.data, id: r.data.data._id };
+        setTasks(p => [...p, created]);
+      }
+      setShowForm(false);
+      setEditingId(null);
+      setDraft(EMPTY_DRAFT);
+    } catch {}
   };
 
-  const completeTask = (id) => setTasks(prev => {
-    const task = prev.find(t => t.id === id);
-    if (!task) return prev;
-    if (task.completed) return prev.map(t => t.id === id ? { ...t, completed: false } : t);
-    const updated = prev.map(t => t.id === id ? { ...t, completed: true, overdue: false } : t);
-    if (task.repeat && task.repeat !== 'none') {
-      const nextDue = nextDueDate(task.dueDate, task.repeat);
-      return [...updated, {
-        ...task,
-        id: Date.now().toString(),
-        completed: false,
-        overdue: false,
-        dueDate: nextDue,
-        // reminderTime (HH:MM) stays the same — scheduler fires it on the new due date
-        // reminder (one-off datetime) is cleared since this is now a repeating occurrence
-        reminder: '',
-      }];
-    }
-    return updated;
-  });
-  const deleteTask   = (id) => setTasks(p => p.filter(t => t.id !== id));
-  const markOverdue  = useCallback((id) => setTasks(p => p.map(t => t.id === id ? { ...t, overdue: true } : t)), []);
+  const completeTask = async (id) => {
+    try {
+      const r = await toggleTodo(id);
+      const updated = { ...r.data.data, id: r.data.data._id };
+      setTasks(p => p.map(t => t.id === id ? updated : t));
+    } catch {}
+  };
+  const selectTask = (task) => {
+    setDetailTaskId(prev => prev === task.id ? null : task.id);
+  };
+
+  const deleteTask = async (id) => {
+    try {
+      await deleteTodo(id);
+      setDetailTaskId(prev => prev === id ? null : prev);
+      setTasks(p => p.filter(t => t.id !== id));
+    } catch {}
+  };
+  const markOverdue = useCallback((id) => setTasks(p => p.map(t => t.id === id ? { ...t, overdue: true } : t)), []);
 
   // ── reminder scheduler ──
   const handleToast = useCallback(({ task }) => {
@@ -465,8 +492,10 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
   const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const endOfDay   = new Date(startOfDay.getTime() + 86400000 - 1);
   const pendingToday = tasks.filter(t =>
-    !t.completed && t.dueDate &&
-    new Date(t.dueDate) >= startOfDay && new Date(t.dueDate) <= endOfDay
+    !t.completed && (
+      !t.dueDate ||
+      (new Date(t.dueDate) >= startOfDay && new Date(t.dueDate) <= endOfDay)
+    )
   ).length;
 
   const allCategories = [...new Set(tasks.map(t => t.category))];
@@ -540,16 +569,37 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
         />
       )}
 
-      {/* ── task list ── */}
-      <TaskList
-        tasks={tasks}
-        tab={tab}
-        filterPriority={filterPriority}
-        filterCategory={filterCategory}
-        onComplete={completeTask}
-        onEdit={openEdit}
-        onDelete={deleteTask}
-      />
+      {/* ── task list + detail panel ── */}
+      <div className={`td-body${detailTaskId ? ' td-body--split' : ''}`}>
+        <div className="td-body-list">
+          <TaskList
+            tasks={tasks}
+            tab={tab}
+            filterPriority={filterPriority}
+            filterCategory={filterCategory}
+            onComplete={completeTask}
+            onEdit={openEdit}
+            onDelete={deleteTask}
+            onSelect={selectTask}
+            selectedId={detailTaskId}
+          />
+        </div>
+
+        {detailTaskId && (() => {
+          const detailTask = tasks.find(t => t.id === detailTaskId);
+          return detailTask ? (
+            <div className="td-body-detail">
+              <TodoDetail
+                key={detailTaskId}
+                task={detailTask}
+                onClose={() => setDetailTaskId(null)}
+              />
+            </div>
+          ) : null;
+        })()}
+      </div>
+
+
 
       {/* ── reminder toasts ── */}
       <ReminderToast

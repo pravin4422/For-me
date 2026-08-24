@@ -67,7 +67,7 @@
 .htc-value {
   font-size: 18px;
   font-weight: 800;
-  color: #343090;
+  color: var(--accent);
   margin: 0;
   letter-spacing: -0.5px;
 }
@@ -117,7 +117,7 @@
 }
 
 .htc-input:focus {
-  border-color: #5f59f7;
+  border-color: var(--accent);
 }
 
 .htc-input--sm {

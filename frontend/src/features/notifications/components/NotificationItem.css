@@ -8,14 +8,14 @@
   transition: background 0.15s;
   position: relative;
 }
-.notif-item:hover { background: var(--bg-hover, #f5f5ff); }
-.notif-item--unread { background: var(--bg-unread, #f0f0ff); }
+.notif-item:hover { background: var(--accent-bg); }
+.notif-item--unread { background: var(--accent-bg); }
 .notif-item--unread::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: #5f59f7;
+  background: var(--accent);
   border-radius: 0 2px 2px 0;
 }
 
