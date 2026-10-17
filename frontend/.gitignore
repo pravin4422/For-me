@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
+# Secrets
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
 
 # Editor directories and files
 .vscode/*
