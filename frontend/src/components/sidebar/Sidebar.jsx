@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import api from '../../api/axios/axiosInstance';
+import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, CheckSquare, BookOpen, FileText, Brain,
   Briefcase, Clock, FolderOpen, Wallet, ShoppingCart, Heart,
   Sparkles, Bell, Settings, ChevronDown, ChevronRight,
   LogOut, User, X, Target, Zap, Stethoscope,
   FlaskConical, Table, Sigma, Divide, Percent, Calculator,
-  Mail, Phone, MapPin, GraduationCap, Pencil,
+  Mail, Pencil,
   PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import './Sidebar.css';
@@ -272,25 +272,16 @@ function NavItem({ item, collapsed, depth = 0 }) {
   );
 }
 
-function calcAge(dob) {
-  if (!dob) return null;
-  const b = new Date(dob);
-  if (isNaN(b)) return null;
-  const diff = Date.now() - b.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-}
-
 export default function Sidebar({ collapsed, onClose, mobile, onToggle }) {
   const navigate = useNavigate();
-  const [profile, setProfile]       = useState(null);
+  const { logout, user } = useAuth();
   const [popupOpen, setPopupOpen]   = useState(false);
   const popupRef                    = useRef(null);
 
-  useEffect(() => {
-    api.get('/settings/profile')
-      .then(r => setProfile(r.data))
-      .catch(() => setProfile(null));
-  }, []);
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   useEffect(() => {
     if (!popupOpen) return;
@@ -301,8 +292,9 @@ export default function Sidebar({ collapsed, onClose, mobile, onToggle }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [popupOpen]);
 
-  const pictureUrl = profile?.pictureUrl || null;
-  const userName   = profile?.fullName   || 'My Account';
+  const pictureUrl = user?.photoURL || null;
+  const userName   = user?.displayName || user?.email?.split('@')[0] || 'My Account';
+  const userEmail  = user?.email || '';
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobile ? 'mobile-open' : ''}`}>
@@ -353,26 +345,19 @@ export default function Sidebar({ collapsed, onClose, mobile, onToggle }) {
             </div>
           )}
 
-          {popupOpen && profile && (
+          {popupOpen && (
             <div className="profile-popup">
               <div className="pp-avatar-wrap">
                 {pictureUrl
-                  ? <img src={pictureUrl} alt={profile.fullName} className="pp-avatar" />
+                  ? <img src={pictureUrl} alt={userName} className="pp-avatar" />
                   : <div className="pp-avatar pp-avatar-placeholder"><User size={32} /></div>
                 }
               </div>
-              <div className="pp-name">{profile.fullName || 'No name'}</div>
-              {profile.occupation && <div className="pp-badge">{profile.occupation}</div>}
-              {calcAge(profile.dob) && <div className="pp-age">{calcAge(profile.dob)} years old</div>}
+              <div className="pp-name">{userName}</div>
               <div className="pp-divider" />
               <div className="pp-rows">
-                {profile.email    && <div className="pp-row"><Mail size={13} /><span>{profile.email}</span></div>}
-                {profile.phone    && <div className="pp-row"><Phone size={13} /><span>{profile.phone}</span></div>}
-                {profile.location && <div className="pp-row"><MapPin size={13} /><span>{profile.location}</span></div>}
-                {profile.education && <div className="pp-row"><GraduationCap size={13} /><span>{profile.education}</span></div>}
-                {profile.targetExam && <div className="pp-row"><Briefcase size={13} /><span>{profile.targetExam}</span></div>}
+                {userEmail && <div className="pp-row"><Mail size={13} /><span>{userEmail}</span></div>}
               </div>
-              {profile.bio && <p className="pp-bio">{profile.bio}</p>}
               <button className="pp-edit-btn" onClick={() => { setPopupOpen(false); navigate('/dashboard/profile'); }}>
                 <Pencil size={13} /> View Full Profile
               </button>
@@ -380,7 +365,7 @@ export default function Sidebar({ collapsed, onClose, mobile, onToggle }) {
           )}
         </div>
         {!collapsed && (
-          <button className="logout-btn" onClick={() => navigate('/')}>
+          <button className="logout-btn" onClick={handleLogout}>
             <LogOut size={16} />
           </button>
         )}

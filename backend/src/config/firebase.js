@@ -1,15 +1,17 @@
-const admin = require('firebase-admin');
+const { initializeApp, getApps, cert } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
 
 const initFirebase = () => {
   try {
     if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) return;
     const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
     if (!parsed.private_key) return;
-    if (admin.apps.length) return;
-    admin.initializeApp({ credential: admin.credential.cert(parsed) });
+    if (getApps().length) return;
+    initializeApp({ credential: cert(parsed) });
+    console.log('Firebase Admin initialized');
   } catch (e) {
     console.warn('Firebase init skipped:', e.message);
   }
 };
 
-module.exports = { admin, initFirebase };
+module.exports = { getAuth, initFirebase };

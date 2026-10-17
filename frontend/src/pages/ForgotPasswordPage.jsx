@@ -56,17 +56,7 @@ export default function ForgotPasswordPage({ onSendResetLink, onNavigate }) {
     <div className="forgot-page">
       <div className="forgot-card">
 
-        <div className="forgot-brand">
-          <span className="forgot-brand-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-          </span>
-          <span className="forgot-brand-name">ProTrack</span>
-        </div>
+
 
         {!submitted ? (
           <>

@@ -73,7 +73,7 @@ function OTPStep({ onVerify, onResend, loading }) {
   );
 }
 
-export default function SignupPage({ onSignup, onGoogleSignup, onNavigate }) {
+export default function SignupPage({ onSignup, onGoogleSignup, onNavigate, onResendVerification }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -105,8 +105,17 @@ export default function SignupPage({ onSignup, onGoogleSignup, onNavigate }) {
     try {
       await onSignup?.(fullName, email, password);
       setStep('email-verify');
-    } catch {
-      setErrors({ form: 'Signup failed. Please try again.' });
+    } catch (err) {
+      console.error('Signup error:', err?.code, err?.message);
+      if (err?.code === 'auth/email-already-in-use') {
+        setErrors({ form: 'An account with this email already exists.' });
+      } else if (err?.code === 'auth/weak-password') {
+        setErrors({ form: 'Password is too weak.' });
+      } else if (err?.code === 'auth/invalid-email') {
+        setErrors({ form: 'Invalid email address.' });
+      } else {
+        setErrors({ form: err?.message || 'Signup failed. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -129,17 +138,7 @@ export default function SignupPage({ onSignup, onGoogleSignup, onNavigate }) {
       <div className="signup-page">
       <div className="signup-card">
 
-        <div className="signup-brand">
-          <span className="signup-brand-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-          </span>
-          <span className="signup-brand-name">ProTrack</span>
-        </div>
+
 
         {step === 'form' && (
           <>
@@ -266,8 +265,8 @@ export default function SignupPage({ onSignup, onGoogleSignup, onNavigate }) {
         {step === 'email-verify' && (
           <EmailVerifyStep
             email={email}
-            onContinue={() => onNavigate?.('dashboard')}
-            onResend={() => console.log('Resend verification email')}
+            onContinue={() => onNavigate?.('login')}
+            onResend={() => onResendVerification?.()}
           />
         )}
 
@@ -277,23 +276,6 @@ export default function SignupPage({ onSignup, onGoogleSignup, onNavigate }) {
             onVerify={code => console.log('OTP:', code)}
             onResend={() => console.log('Resend OTP')}
           />
-        )}
-
-        {/* Dev toggles — remove in production */}
-        {step === 'form' && (
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
-            <button className="signup-link-btn" style={{ fontSize: '12px', opacity: 0.4 }} onClick={() => setStep('email-verify')}>
-              Show email verify (dev)
-            </button>
-            <button className="signup-link-btn" style={{ fontSize: '12px', opacity: 0.4 }} onClick={() => setStep('otp')}>
-              Show OTP (dev)
-            </button>
-          </div>
-        )}
-        {step !== 'form' && (
-          <button className="signup-link-btn" style={{ fontSize: '12px', opacity: 0.4, marginTop: '12px', textAlign: 'center' }} onClick={() => setStep('form')}>
-            Back to form (dev)
-          </button>
         )}
 
       </div>

@@ -35,8 +35,17 @@ export default function LoginPage({ onLogin, onGoogleLogin, onNavigate }) {
     setLoading(true);
     try {
       await onLogin?.(identifier, password);
-    } catch {
-      setErrorMessage('Invalid credentials. Please try again.');
+    } catch (err) {
+      const code = err?.code;
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setErrorMessage('Incorrect email or password.');
+      } else if (code === 'auth/email-not-verified') {
+        setErrorMessage('Please verify your email before logging in.');
+      } else if (code === 'auth/too-many-requests') {
+        setErrorMessage('Too many attempts. Try again later.');
+      } else {
+        setErrorMessage('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -59,17 +68,7 @@ export default function LoginPage({ onLogin, onGoogleLogin, onNavigate }) {
       <div className="login-page">
         <div className="login-card">
 
-          <div className="login-brand">
-          <span className="login-brand-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-          </span>
-          <span className="login-brand-name">ProTrack</span>
-        </div>
+
 
           <h1 className="login-heading">Login to your account</h1>
           <p className="login-subtext">Welcome back! Please enter your details.</p>

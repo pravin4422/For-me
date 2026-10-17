@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
+import { auth } from './config/firebase';
+import { updateProfile, sendEmailVerification } from 'firebase/auth';
 import Navbar from './components/navbar/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -50,34 +52,63 @@ import ProfileEditPage        from './features/profile/ProfileEditPage';
 function PublicApp() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, login, signup, loginGoogle, resetPassword, logout } = useAuth();
 
   const page = location.pathname.replace('/', '') || 'home';
 
-  const handleLogin  = () => { setIsLoggedIn(true); navigate('/dashboard'); };
-  const handleLogout = () => { setIsLoggedIn(false); navigate('/'); };
+  const handleLogout = async () => { await logout(); navigate('/'); };
 
   const handleNavigate = (path) => {
     if (path === 'dashboard') navigate('/dashboard');
     else if (path === 'home') navigate('/');
+    else if (path === 'profile') navigate('/dashboard/profile');
+    else if (path === 'settings') navigate('/dashboard/settings');
     else navigate(`/${path}`);
+  };
+
+  const handleLogin = async (email, password) => {
+    await login(email, password);
+    await auth.currentUser.reload();
+    if (!auth.currentUser.emailVerified) {
+      await logout();
+      throw Object.assign(new Error(), { code: 'auth/email-not-verified' });
+    }
+    navigate('/dashboard');
+  };
+
+  const handleSignup = async (fullName, email, password) => {
+    const { user: newUser } = await signup(email, password);
+    await updateProfile(newUser, { displayName: fullName });
+    await sendEmailVerification(newUser);
+    await logout();
+  };
+
+  const handleResendVerification = async () => {
+    if (auth.currentUser) await sendEmailVerification(auth.currentUser);
+  };
+
+  const handleGoogleLogin = async () => {
+    const result = await loginGoogle();
+    if (result.user) {
+      navigate('/dashboard');
+    }
   };
 
   return (
     <>
       <Navbar
-        isLoggedIn={isLoggedIn}
-        user={null}
+        isLoggedIn={!!user}
+        user={user}
         notificationCount={0}
         currentPage={page}
         onNavigate={handleNavigate}
         onLogout={handleLogout}
       />
       <Routes>
-        <Route path="/"                  element={<HomePage isLoggedIn={isLoggedIn} onNavigate={handleNavigate} />} />
-        <Route path="/login"             element={<LoginPage onLogin={handleLogin} onGoogleLogin={handleLogin} onNavigate={handleNavigate} />} />
-        <Route path="/signup"            element={<SignupPage onSignup={handleLogin} onGoogleSignup={handleLogin} onNavigate={handleNavigate} />} />
-        <Route path="/forgot-password"   element={<ForgotPasswordPage onSendResetLink={() => {}} onNavigate={handleNavigate} />} />
+        <Route path="/"                  element={<HomePage isLoggedIn={!!user} onNavigate={handleNavigate} />} />
+        <Route path="/login"             element={<LoginPage onLogin={handleLogin} onGoogleLogin={handleGoogleLogin} onNavigate={handleNavigate} />} />
+        <Route path="/signup"            element={<SignupPage onSignup={handleSignup} onGoogleSignup={handleGoogleLogin} onResendVerification={handleResendVerification} onNavigate={handleNavigate} />} />
+        <Route path="/forgot-password"   element={<ForgotPasswordPage onSendResetLink={resetPassword} onNavigate={handleNavigate} />} />
         <Route path="*"                  element={<Navigate to="/" replace />} />
       </Routes>
     </>
@@ -86,7 +117,8 @@ function PublicApp() {
 
 function DashboardApp() {
   const navigate = useNavigate();
-  const handleLogout = () => navigate('/');
+  const { logout } = useAuth();
+  const handleLogout = async () => { await logout(); navigate('/'); };
 
   return (
     <DashboardLayout onLogout={handleLogout}>
@@ -168,10 +200,17 @@ function DashboardApp() {
   );
 }
 
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
+  if (!user || !user.emailVerified) return <Navigate to="/login" replace />;
+  return children;
+}
+
 export default function App() {
   return (
     <Routes>
-      <Route path="/dashboard/*" element={<DashboardApp />} />
+      <Route path="/dashboard/*" element={<ProtectedRoute><DashboardApp /></ProtectedRoute>} />
       <Route path="/*"           element={<PublicApp />} />
     </Routes>
   );

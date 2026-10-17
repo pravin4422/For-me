@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../../api/axios/axiosInstance';
+import { auth } from '../../../config/firebase';
 
 export function useProfile() {
   const [profile, setProfile] = useState(null);
@@ -9,8 +10,25 @@ export function useProfile() {
 
   useEffect(() => {
     api.get('/settings/profile')
-      .then(r => setProfile(r.data))
-      .catch(() => {})
+      .then(r => {
+        const data = r.data;
+        const firebaseUser = auth.currentUser;
+        // Merge Firebase identity as fallback for empty fields
+        setProfile({
+          ...data,
+          fullName:   data.fullName   || firebaseUser?.displayName || '',
+          email:      data.email      || firebaseUser?.email       || '',
+          pictureUrl: data.pictureUrl || firebaseUser?.photoURL    || '',
+        });
+      })
+      .catch(() => {
+        const firebaseUser = auth.currentUser;
+        setProfile({
+          fullName:   firebaseUser?.displayName || '',
+          email:      firebaseUser?.email       || '',
+          pictureUrl: firebaseUser?.photoURL    || '',
+        });
+      })
       .finally(() => setLoading(false));
   }, []);
 

@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import NotificationBell from '../../features/notifications/NotificationBell';
 import { useTheme } from '../../context/ThemeContext/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
 export default function Navbar({
@@ -24,6 +25,12 @@ export default function Navbar({
   const hideTimer = useRef(null);
 
   const { theme, toggle } = useTheme();
+  const { user: firebaseUser } = useAuth();
+
+  const displayName = firebaseUser?.displayName || firebaseUser?.email?.split('@')[0] || 'User';
+  const displayEmail = firebaseUser?.email || '';
+  const photoURL = firebaseUser?.photoURL || null;
+  const initials = displayName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   const nav = (path) => {
     setMobileOpen(false);
@@ -65,10 +72,6 @@ export default function Navbar({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-    : 'U';
 
   return (
     <nav className={`navbar${navVisible ? '' : ' navbar--hidden'}`}>
@@ -116,8 +119,8 @@ export default function Navbar({
                 onClick={() => setDropdownOpen(v => !v)}
                 aria-label="User menu"
               >
-                {user?.avatarUrl
-                  ? <img src={user.avatarUrl} alt={user.name} className="navbar-avatar__img" />
+                {photoURL
+                  ? <img src={photoURL} alt={displayName} className="navbar-avatar__img" />
                   : <span className="navbar-avatar__initials">{initials}</span>
                 }
                 <ChevronDown size={14} className={`navbar-avatar__chevron${dropdownOpen ? ' open' : ''}`} />
@@ -126,8 +129,8 @@ export default function Navbar({
               {dropdownOpen && (
                 <div className="navbar-dropdown">
                   <div className="navbar-dropdown__header">
-                    <span className="navbar-dropdown__name">{user?.name || 'User'}</span>
-                    <span className="navbar-dropdown__email">{user?.email || ''}</span>
+                    <span className="navbar-dropdown__name">{displayName}</span>
+                    <span className="navbar-dropdown__email">{displayEmail}</span>
                   </div>
                   <button className="navbar-dropdown__item" onClick={() => nav('profile')}>
                     <User size={15} /> Profile

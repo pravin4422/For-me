@@ -16,7 +16,8 @@ export function useNotifications({ category = null, page = 1, limit = 20 } = {})
       const params = { page: reset ? 1 : page, limit };
       if (category) params.category = category;
       const { data } = await axiosInstance.get('/notifications', { params });
-      setNotifications(prev => reset ? data.items : [...prev, ...data.items]);
+      const items = data.items ?? data.data ?? [];
+      setNotifications(prev => reset ? items : [...prev, ...items]);
       setUnreadCount(data.unreadCount ?? 0);
       setHasMore(data.hasMore ?? false);
     } catch {

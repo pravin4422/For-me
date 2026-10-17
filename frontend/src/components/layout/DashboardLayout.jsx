@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Sun, Moon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Sun, Moon, Home } from 'lucide-react';
 import Sidebar from '../sidebar/Sidebar';
 import { useTheme } from '../../context/ThemeContext/ThemeContext';
 import NotificationBell from '../../features/notifications/NotificationBell';
@@ -91,6 +92,7 @@ export default function DashboardLayout({ children, onLogout }) {
   let location;
   try { location = useLocation(); } catch { location = { pathname: '/dashboard' }; }
   const title = ROUTE_TITLES[location.pathname] || 'Dashboard';
+  const navigate = useNavigate();
 
   return (
     <div className="dashboard-shell">
@@ -106,6 +108,9 @@ export default function DashboardLayout({ children, onLogout }) {
             <h1 className="topbar-title">{title}</h1>
           </div>
           <div className="topbar-right">
+            <button className="icon-btn" onClick={() => navigate('/')} aria-label="Go to home">
+              <Home size={18} />
+            </button>
             <div className="search-box">
               <Search size={15} />
               <input placeholder="Search..." />

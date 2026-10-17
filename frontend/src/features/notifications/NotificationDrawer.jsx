@@ -8,7 +8,7 @@ import './NotificationDrawer.css';
 const CATEGORIES = Object.keys(NotificationCategory);
 
 export default function NotificationDrawer({ open, onClose, notif }) {
-  const { notifications, loading, markAsRead, deleteNotification, clearAll, addLocal } = notif;
+  const { notifications = [], loading, markAsRead, deleteNotification, clearAll, addLocal } = notif;
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', message: '', category: 'Announcement' });
 
