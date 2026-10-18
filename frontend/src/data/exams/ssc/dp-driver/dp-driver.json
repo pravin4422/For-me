@@ -1,0 +1,11 @@
+{
+  "id": "dp-driver",
+  "name": "Delhi Police Driver",
+  "category": "ssc",
+  "fullName": "Delhi Police Driver",
+  "type": "Delhi Police Exams",
+  "qualification": "10th / 12th pass",
+  "posts": [
+    "Driver"
+  ]
+}

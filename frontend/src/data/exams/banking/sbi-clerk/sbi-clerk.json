@@ -1,0 +1,11 @@
+{
+  "id": "sbi-clerk",
+  "name": "SBI Clerk",
+  "category": "banking",
+  "fullName": "State Bank of India Junior Associate",
+  "type": "SBI",
+  "qualification": "Graduate",
+  "posts": [
+    "Junior Associate (Clerk)"
+  ]
+}

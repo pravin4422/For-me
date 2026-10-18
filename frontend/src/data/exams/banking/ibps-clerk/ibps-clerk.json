@@ -1,0 +1,11 @@
+{
+  "id": "ibps-clerk",
+  "name": "IBPS Clerk",
+  "category": "banking",
+  "fullName": "Institute of Banking Personnel Selection Clerk",
+  "type": "IBPS",
+  "qualification": "Graduate",
+  "posts": [
+    "Clerical posts in public sector banks"
+  ]
+}

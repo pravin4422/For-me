@@ -17,6 +17,7 @@ const todoSchema = new mongoose.Schema(
     taskType: { type: String, enum: ['ONE_TIME', 'RECURRING'], default: 'ONE_TIME' },
     frequencyDays: { type: [String], enum: ['MON','TUE','WED','THU','FRI','SAT','SUN'], default: [] },
     startDate: { type: Date, default: null },
+    deletedAt: { type: Date, default: null },
     currentStreak:   { type: Number, default: 0 },
     bestStreak:      { type: Number, default: 0 },
     bestStreakStart:  { type: Date,   default: null },

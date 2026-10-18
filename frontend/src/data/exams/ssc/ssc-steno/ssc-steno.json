@@ -1,0 +1,12 @@
+{
+  "id": "ssc-steno",
+  "name": "SSC Stenographer",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission Stenographer Grade C & D",
+  "type": "Main Exams",
+  "qualification": "12th pass",
+  "posts": [
+    "Stenographer Grade C",
+    "Stenographer Grade D"
+  ]
+}

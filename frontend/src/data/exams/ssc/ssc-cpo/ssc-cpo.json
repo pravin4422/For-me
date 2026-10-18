@@ -1,0 +1,13 @@
+{
+  "id": "ssc-cpo",
+  "name": "SSC CPO",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission Central Police Organisation",
+  "type": "Main Exams",
+  "qualification": "Graduate",
+  "posts": [
+    "Sub-Inspector in Delhi Police",
+    "Sub-Inspector in CAPFs",
+    "ASI in CISF"
+  ]
+}

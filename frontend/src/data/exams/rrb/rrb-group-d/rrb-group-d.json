@@ -1,0 +1,14 @@
+{
+  "id": "rrb-group-d",
+  "name": "RRB Group D",
+  "category": "rrb",
+  "fullName": "Railway Recruitment Board Group D",
+  "type": "Group D / Level 1",
+  "qualification": "10th pass / ITI",
+  "posts": [
+    "Track Maintainer",
+    "Helper",
+    "Assistant Pointsman",
+    "Porter"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "rrb-technician",
+  "name": "RRB Technician",
+  "category": "rrb",
+  "fullName": "Railway Recruitment Board Technician",
+  "type": "Technical",
+  "posts": [
+    "Technician Grade I (Signal)",
+    "Technician Grade III"
+  ]
+}

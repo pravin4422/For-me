@@ -4,7 +4,7 @@ const AppError = require('../utils/AppError');
 
 const getAll = async (req, res, next) => {
   try {
-    const todos = await Todo.find({ userId: req.user.uid }).sort({ createdAt: -1 });
+    const todos = await Todo.find({ userId: req.user.uid, deletedAt: null }).sort({ createdAt: -1 });
     res.json({ success: true, data: todos });
   } catch (e) { next(e); }
 };
@@ -30,9 +30,29 @@ const update = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   try {
-    const todo = await Todo.findOneAndDelete({ _id: req.params.id, userId: req.user.uid });
+    const todo = await Todo.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.uid, deletedAt: null },
+      { deletedAt: new Date() },
+      { new: true }
+    );
     if (!todo) return next(new AppError('Todo not found', 404));
-    res.json({ success: true, message: 'Deleted' });
+    res.json({ success: true, message: 'Moved to trash' });
+  } catch (e) { next(e); }
+};
+
+const getDeleted = async (req, res, next) => {
+  try {
+    const todos = await Todo.find({ userId: req.user.uid, deletedAt: { $ne: null } }).sort({ deletedAt: -1 });
+    res.json({ success: true, data: todos });
+  } catch (e) { next(e); }
+};
+
+const permanentDelete = async (req, res, next) => {
+  try {
+    const todo = await Todo.findOneAndDelete({ _id: req.params.id, userId: req.user.uid, deletedAt: { $ne: null } });
+    if (!todo) return next(new AppError('Todo not found', 404));
+    await TodoLog.deleteMany({ todoId: todo._id });
+    res.json({ success: true, message: 'Permanently deleted' });
   } catch (e) { next(e); }
 };
 
@@ -43,6 +63,16 @@ const toggleComplete = async (req, res, next) => {
     todo.completed = !todo.completed;
     if (todo.completed) todo.overdue = false;
     await todo.save();
+    // sync today's log and recalc streaks for recurring tasks
+    if (todo.taskType === 'RECURRING') {
+      const today = midnightUTC(new Date());
+      await TodoLog.findOneAndUpdate(
+        { todoId: todo._id, userId: req.user.uid, date: today },
+        { $set: { completed: todo.completed } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      await recalcStreaks(todo, req.user.uid);
+    }
     res.json({ success: true, data: todo });
   } catch (e) { next(e); }
 };
@@ -85,20 +115,20 @@ const getOverview = async (req, res, next) => {
 
     const now = new Date();
     const todayStart = midnightUTC(now);
-    const todayEnd   = todayStart;
+    const todayEnd   = new Date(todayStart.getTime() + 86400000 - 1); // end of today
 
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-    const monthEnd   = todayStart;
+    const monthEnd   = todayEnd;
 
     const yearStart  = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
-    const yearEnd    = todayStart;
+    const yearEnd    = todayEnd;
 
-    // Fetch all logs up to today in one query
+    // Fetch all logs up to end of today in one query
     const allLogs = await TodoLog.find({
       todoId: todo._id,
       userId: req.user.uid,
       completed: true,
-      date: { $lte: todayStart },
+      date: { $lte: todayEnd },
     }).lean();
 
     const totalCompletions = allLogs.length;
@@ -152,10 +182,11 @@ async function recalcStreaks(todo, userId) {
   const logs = await TodoLog.find({ todoId: todo._id, userId }).sort({ date: 1 }).lean();
   const completedSet = new Set(logs.filter(l => l.completed).map(l => l.date.getTime()));
 
-  // Build list of all due dates from startDate (or first log) up to today
+  // use createdAt as origin so missed days before first log are counted
   const today = midnightUTC(new Date());
-  const origin = todo.startDate ? midnightUTC(new Date(todo.startDate))
-    : logs.length ? midnightUTC(new Date(logs[0].date)) : today;
+  const origin = todo.startDate
+    ? midnightUTC(new Date(todo.startDate))
+    : midnightUTC(new Date(todo.createdAt));
 
   const dueDates = [];
   const cur = new Date(origin);
@@ -166,7 +197,6 @@ async function recalcStreaks(todo, userId) {
 
   let best = 0, bestStart = null, bestEnd = null;
   let run = 0, runStart = null;
-  let current = 0;
 
   for (let i = 0; i < dueDates.length; i++) {
     const d = dueDates[i];
@@ -179,8 +209,15 @@ async function recalcStreaks(todo, userId) {
     }
   }
 
-  // current streak: count backwards from today
-  for (let i = dueDates.length - 1; i >= 0; i--) {
+  // current streak: count backwards — allow today to be incomplete (streak still alive if yesterday done)
+  let current = 0;
+  const lastDueIdx = dueDates.length - 1;
+  // start from today if completed, else from yesterday
+  let startIdx = lastDueIdx;
+  if (lastDueIdx >= 0 && !completedSet.has(dueDates[lastDueIdx].getTime())) {
+    startIdx = lastDueIdx - 1;
+  }
+  for (let i = startIdx; i >= 0; i--) {
     if (completedSet.has(dueDates[i].getTime())) current++;
     else break;
   }
@@ -295,13 +332,15 @@ const getHistory = async (req, res, next) => {
     const buckets = [];
 
     if (range === 'week') {
-      for (let i = 7; i >= 0; i--) {
-        const weekEnd   = new Date(today); weekEnd.setUTCDate(weekEnd.getUTCDate() - i * 7);
-        const weekStart = new Date(weekEnd); weekStart.setUTCDate(weekStart.getUTCDate() - 6);
-        const label = weekEnd.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-        buckets.push({ label, from: weekStart, to: weekEnd });
+      // Last 7 days, one bucket per day
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() - i);
+        const label = d.toLocaleDateString('en-IN', { weekday: 'short', timeZone: 'UTC' });
+        buckets.push({ label, from: d, to: d });
       }
     } else if (range === 'month') {
+      // Last 12 months, one bucket per month
       for (let i = 11; i >= 0; i--) {
         const y = now.getUTCFullYear(), m = now.getUTCMonth() - i;
         const from = new Date(Date.UTC(y, m, 1));
@@ -310,6 +349,7 @@ const getHistory = async (req, res, next) => {
         buckets.push({ label, from, to: to > today ? today : to });
       }
     } else {
+      // Last 5 years, one bucket per year
       for (let i = 4; i >= 0; i--) {
         const y    = now.getUTCFullYear() - i;
         const from = new Date(Date.UTC(y, 0, 1));
@@ -343,7 +383,7 @@ const getCalendar = async (req, res, next) => {
     const month = parseInt(req.query.month) || (new Date().getUTCMonth() + 1); // 1-based
 
     const from = new Date(Date.UTC(year, month - 1, 1));
-    const to   = new Date(Date.UTC(year, month, 0)); // last day of month
+    const to   = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999)); // end of last day of month
 
     const logs = await TodoLog.find({
       todoId: todo._id, userId: req.user.uid,
@@ -380,4 +420,4 @@ const getFrequency = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-module.exports = { getAll, create, update, remove, toggleComplete, logComplete, getOverview, getScore, getHistory, getCalendar, getStreaks, getFrequency };
+module.exports = { getAll, create, update, remove, getDeleted, permanentDelete, toggleComplete, logComplete, getOverview, getScore, getHistory, getCalendar, getStreaks, getFrequency };

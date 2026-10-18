@@ -1,0 +1,14 @@
+{
+  "id": "ssc-je",
+  "name": "SSC JE",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission Junior Engineer",
+  "type": "Main Exams",
+  "qualification": "Diploma / Degree in Engineering",
+  "posts": [
+    "Junior Engineer (Civil)",
+    "Junior Engineer (Mechanical)",
+    "Junior Engineer (Electrical)",
+    "Junior Engineer (Quantity Surveying)"
+  ]
+}

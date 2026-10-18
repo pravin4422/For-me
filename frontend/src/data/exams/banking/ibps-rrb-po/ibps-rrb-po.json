@@ -1,0 +1,11 @@
+{
+  "id": "ibps-rrb-po",
+  "name": "IBPS RRB PO",
+  "category": "banking",
+  "fullName": "IBPS RRB Officer Scale I",
+  "type": "IBPS",
+  "qualification": "Graduate",
+  "posts": [
+    "Officer Scale I in Regional Rural Banks"
+  ]
+}

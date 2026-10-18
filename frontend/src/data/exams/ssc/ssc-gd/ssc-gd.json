@@ -1,0 +1,18 @@
+{
+  "id": "ssc-gd",
+  "name": "SSC GD Constable",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission General Duty Constable",
+  "type": "Main Exams",
+  "qualification": "10th pass",
+  "posts": [
+    "Constable in BSF",
+    "Constable in CISF",
+    "Constable in CRPF",
+    "Constable in ITBP",
+    "Constable in SSB",
+    "Constable in Assam Rifles",
+    "Constable in NIA",
+    "Constable in SSF"
+  ]
+}

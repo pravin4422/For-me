@@ -1,0 +1,14 @@
+{
+  "id": "ssc-chsl",
+  "name": "SSC CHSL",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission Combined Higher Secondary Level",
+  "type": "Main Exams",
+  "qualification": "12th pass",
+  "posts": [
+    "Lower Division Clerk (LDC)",
+    "Junior Secretariat Assistant (JSA)",
+    "Postal Assistant",
+    "Data Entry Operator (DEO)"
+  ]
+}

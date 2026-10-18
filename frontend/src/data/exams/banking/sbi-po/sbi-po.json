@@ -1,0 +1,11 @@
+{
+  "id": "sbi-po",
+  "name": "SBI PO",
+  "category": "banking",
+  "fullName": "State Bank of India Probationary Officer",
+  "type": "SBI",
+  "qualification": "Graduate",
+  "posts": [
+    "Probationary Officer"
+  ]
+}

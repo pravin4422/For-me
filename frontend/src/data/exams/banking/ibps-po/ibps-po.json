@@ -1,0 +1,11 @@
+{
+  "id": "ibps-po",
+  "name": "IBPS PO",
+  "category": "banking",
+  "fullName": "Institute of Banking Personnel Selection Probationary Officer",
+  "type": "IBPS",
+  "qualification": "Graduate",
+  "posts": [
+    "Probationary Officer in public sector banks"
+  ]
+}

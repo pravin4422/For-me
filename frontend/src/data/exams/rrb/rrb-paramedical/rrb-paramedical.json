@@ -1,0 +1,15 @@
+{
+  "id": "rrb-paramedical",
+  "name": "RRB Paramedical",
+  "category": "rrb",
+  "fullName": "Railway Recruitment Board Paramedical Staff",
+  "type": "Paramedical",
+  "posts": [
+    "Staff Nurse",
+    "Pharmacist",
+    "Health & Malaria Inspector",
+    "Lab Assistant",
+    "Dietician",
+    "ECG Technician"
+  ]
+}

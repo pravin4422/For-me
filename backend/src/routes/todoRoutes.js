@@ -1,11 +1,13 @@
 const express = require('express');
-const { getAll, create, update, remove, toggleComplete, logComplete, getOverview, getScore, getHistory, getCalendar, getStreaks, getFrequency } = require('../controllers/todoController');
+const { getAll, create, update, remove, getDeleted, permanentDelete, toggleComplete, logComplete, getOverview, getScore, getHistory, getCalendar, getStreaks, getFrequency } = require('../controllers/todoController');
 const verifyToken = require('../middleware/verifyToken');
 
 const router = express.Router();
 
 router.use(verifyToken);
 
+router.get('/trash',      getDeleted);
+router.delete('/trash/:id', permanentDelete);
 router.get('/',           getAll);
 router.post('/',          create);
 router.put('/:id',        update);

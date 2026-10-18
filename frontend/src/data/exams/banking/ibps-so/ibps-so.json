@@ -1,0 +1,16 @@
+{
+  "id": "ibps-so",
+  "name": "IBPS SO",
+  "category": "banking",
+  "fullName": "Institute of Banking Personnel Selection Specialist Officer",
+  "type": "IBPS",
+  "qualification": "Graduate (varies by specialization)",
+  "posts": [
+    "IT Officer",
+    "Agriculture Field Officer",
+    "Law Officer",
+    "HR Officer",
+    "Marketing Officer",
+    "Rajbhasha Officer"
+  ]
+}

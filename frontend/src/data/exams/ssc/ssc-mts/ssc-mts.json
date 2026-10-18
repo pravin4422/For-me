@@ -1,0 +1,13 @@
+{
+  "id": "ssc-mts",
+  "name": "SSC MTS",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission Multi Tasking Staff",
+  "type": "Main Exams",
+  "qualification": "10th pass",
+  "posts": [
+    "Multi Tasking Staff (MTS)",
+    "Havaldar (CBIC)",
+    "Havaldar (CBN)"
+  ]
+}

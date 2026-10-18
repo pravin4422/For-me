@@ -21,9 +21,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setLoading(false);
         await firebaseUser.reload();
         setUser(firebaseUser.emailVerified ? firebaseUser : null);
+        setLoading(false);
       } else {
         setUser(null);
         setLoading(false);

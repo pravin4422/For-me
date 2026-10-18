@@ -3,7 +3,6 @@ import {
   LayoutDashboard, Menu, X,
   User, Settings, LogOut, ChevronDown, Sun, Moon
 } from 'lucide-react';
-import NotificationBell from '../../features/notifications/NotificationBell';
 import { useTheme } from '../../context/ThemeContext/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
@@ -108,9 +107,6 @@ export default function Navbar({
             <button className="navbar-theme-btn" onClick={toggle} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
             </button>
-
-            {/* Bell */}
-            <NotificationBell />
 
             {/* Avatar dropdown */}
             <div className="navbar-avatar-wrap" ref={dropdownRef}>

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   CheckSquare, Plus, Bell, Pencil, Trash2,
   Check, X, ChevronDown, ChevronUp, AlertCircle, Clock,
-  Tag, Calendar, Flag, Filter, Repeat
+  Tag, Calendar, Flag, Filter, Repeat, ArrowLeft
 } from 'lucide-react';
 import useReminderScheduler from '../../hooks/useReminderScheduler';
-import { getTodos, createTodo, updateTodo, deleteTodo, toggleTodo } from '../../api/todo/index.js';
+import { getTodos, createTodo, updateTodo, deleteTodo, toggleTodo, logComplete, getDeletedTodos, permanentDeleteTodo } from '../../api/todo/index.js';
 import TodoDetail from './TodoDetail';
 import './TodoPage.css';
 
@@ -26,11 +26,12 @@ const PRIORITY = {
 };
 
 const CATEGORIES = ['Study', 'Exam', 'Career', 'Health', 'Personal', 'Other'];
-const TABS = ['Daily', 'Weekly', 'Monthly'];
+const TABS = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
 const TAB_PATHS = {
   Daily:   '/dashboard/todo/daily',
   Weekly:  '/dashboard/todo/weekly',
   Monthly: '/dashboard/todo/monthly',
+  Yearly:  '/dashboard/todo/yearly',
 };
 
 const REPEAT_OPTIONS = ['none', 'daily', 'weekly', 'monthly', 'yearly'];
@@ -39,29 +40,44 @@ const EMPTY_DRAFT = {
   title: '', priority: 'Medium', dueDate: '', category: 'Personal',
   reminder: '', reminderTime: '', reminderEnabled: false,
   completed: false, overdue: false, repeat: 'none', taskType: 'ONE_TIME',
-  description: '',
+  description: '', frequencyDays: [],
 };
 
 // ── helpers ────────────────────────────────────────────────
 function isInTab(task, tab) {
-  if (!task.dueDate) return true;
-  const due = new Date(task.dueDate);
-  if (isNaN(due)) return true;
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const endOfDay   = new Date(startOfDay.getTime() + 86400000 - 1);
+
+  // recurring tasks: show based on their repeat cycle
+  if (task.repeat && task.repeat !== 'none') {
+    const due = task.dueDate ? new Date(task.dueDate) : null;
+    // only show if task has started (dueDate is today or in the past, or no dueDate)
+    if (due && due > new Date(startOfDay.getTime() + 86400000 - 1)) return false;
+    if (task.repeat === 'daily')   return true; // daily repeats show in all tabs
+    if (task.repeat === 'weekly')  return tab === 'Weekly' || tab === 'Monthly' || tab === 'Yearly';
+    if (task.repeat === 'monthly') return tab === 'Monthly' || tab === 'Yearly';
+    if (task.repeat === 'yearly')  return tab === 'Yearly';
+  }
+
+  // one-time tasks: filter by dueDate
+  if (!task.dueDate) return tab === 'Daily'; // no due date → only show in Daily
+  const due = new Date(task.dueDate);
+  if (isNaN(due)) return true;
 
   if (tab === 'Daily') {
+    const endOfDay = new Date(startOfDay.getTime() + 86400000 - 1);
     return due >= startOfDay && due <= endOfDay;
   }
   if (tab === 'Weekly') {
-    const day = now.getDay();
-    const startOfWeek = new Date(startOfDay.getTime() - day * 86400000);
+    const startOfWeek = new Date(startOfDay.getTime() - now.getDay() * 86400000);
     const endOfWeek   = new Date(startOfWeek.getTime() + 7 * 86400000 - 1);
     return due >= startOfWeek && due <= endOfWeek;
   }
   if (tab === 'Monthly') {
     return due.getMonth() === now.getMonth() && due.getFullYear() === now.getFullYear();
+  }
+  if (tab === 'Yearly') {
+    return due.getFullYear() === now.getFullYear();
   }
   return false;
 }
@@ -151,13 +167,42 @@ function TaskForm({ draft, onChange, onSave, onCancel, isEdit }) {
               key={r}
               type="button"
               className={`td-repeat-btn${draft.repeat === r ? ' active' : ''}`}
-              onClick={() => onChange('repeat', r)}
+              onClick={() => { onChange('repeat', r); if (r === 'none') onChange('frequencyDays', []); }}
             >
               {r.charAt(0).toUpperCase() + r.slice(1)}
             </button>
           ))}
         </div>
       </div>
+
+      {/* frequency days — only for recurring */}
+      {draft.repeat && draft.repeat !== 'none' && (
+        <div className="td-form-row td-freq-picker-row">
+          <label className="td-toggle-label">Days</label>
+          <div className="td-freq-picker">
+            {['MON','TUE','WED','THU','FRI','SAT','SUN'].map(d => {
+              const active = (draft.frequencyDays || []).includes(d);
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  className={`td-freq-day-btn${active ? ' active' : ''}`}
+                  onClick={() => {
+                    const cur = draft.frequencyDays || [];
+                    onChange('frequencyDays', active ? cur.filter(x => x !== d) : [...cur, d]);
+                  }}
+                  title={d}
+                >
+                  {d.slice(0,2)}
+                </button>
+              );
+            })}
+            {(draft.frequencyDays || []).length === 0 && (
+              <span className="td-freq-every-day">Every day</span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* reminder */}
       <div className="td-reminder-row">
@@ -228,10 +273,10 @@ function TaskForm({ draft, onChange, onSave, onCancel, isEdit }) {
 
       <div className="td-form-actions">
         <button className="td-btn-primary" onClick={onSave}>
-          <Check size={13} /> {isEdit ? 'Update' : 'Add Task'}
+          {isEdit ? 'Update' : 'Add Task'}
         </button>
         <button className="td-btn-ghost" onClick={onCancel}>
-          <X size={13} /> Cancel
+          Cancel
         </button>
       </div>
     </div>
@@ -242,58 +287,282 @@ function TaskForm({ draft, onChange, onSave, onCancel, isEdit }) {
 function TaskCard({ task, onComplete, onEdit, onDelete, onSelect, selected }) {
   const p = PRIORITY[task.priority] || PRIORITY.Medium;
   return (
-    <div className={`td-card ${task.completed ? 'td-card--done' : ''} ${task.overdue && !task.completed ? 'td-card--overdue' : ''}`}>
-      <div className="td-card-left">
-        <button
-          className={`td-check ${task.completed ? 'td-check--done' : ''}`}
-          onClick={() => onComplete(task.id)}
-          title={task.completed ? 'Mark incomplete' : 'Mark complete'}
-        >
-          {task.completed && <Check size={11} />}
+    <div className="td-card-wrap">
+      <div className={`td-card ${task.completed ? 'td-card--done' : ''} ${task.overdue && !task.completed ? 'td-card--overdue' : ''}`}>
+        <div className="td-card-left">
+          <button
+            className={`td-check ${task.completed ? 'td-check--done' : ''}`}
+            onClick={() => onComplete(task.id)}
+            title={task.completed ? 'Mark incomplete' : 'Mark complete'}
+          >
+            {task.completed && <Check size={11} />}
+          </button>
+        </div>
+
+        <div className="td-card-body">
+          <div className="td-card-top">
+            <span className={`td-card-title ${task.completed ? 'td-card-title--done' : ''}`} style={{ cursor: 'pointer' }} onClick={() => onSelect(task)}>{task.title}</span>
+            {task.overdue && !task.completed && (
+              <span className="td-overdue-badge"><AlertCircle size={11} /> Overdue</span>
+            )}
+          </div>
+          <div className="td-card-meta">
+            <span className="td-priority-tag" style={{ background: `${p.color}18`, color: p.color }}>
+              <Flag size={10} /> {p.label}
+            </span>
+            <span className="td-cat-tag"><Tag size={10} /> {task.category}</span>
+            {task.dueDate && (
+              <span className="td-date-tag"><Calendar size={10} /> {fmtDate(task.dueDate)}</span>
+            )}
+            {task.reminderEnabled && task.repeat && task.repeat !== 'none' && task.reminderTime && (
+              <span className="td-reminder-tag"><Bell size={10} /> {task.reminderTime} · {task.repeat}</span>
+            )}
+            {task.reminderEnabled && (!task.repeat || task.repeat === 'none') && task.reminder && (
+              <span className="td-reminder-tag"><Bell size={10} /> {fmtDateTime(task.reminder)}</span>
+            )}
+            {task.repeat && task.repeat !== 'none' && (
+              <span className="td-repeat-tag"><Repeat size={10} /> {task.repeat}</span>
+            )}
+          </div>
+          <div className="td-card-actions">
+            <button className="td-detail-btn" onClick={() => onSelect(task)}>Task Detail</button>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+              <button className="td-icon-btn" onClick={() => onEdit(task)} title="Edit"><Pencil size={13} /></button>
+              <button className="td-icon-btn td-icon-btn--red" onClick={() => onDelete(task.id)} title="Delete"><Trash2 size={13} /></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {selected && (
+        <div className="td-inline-detail">
+          <TodoDetail key={task.id} task={task} onClose={() => onSelect(task)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── DeletedPage ───────────────────────────────────────────
+const TRASH_RANGES = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
+
+function isInTrashRange(task, range) {
+  const d = new Date(task.deletedAt);
+  if (isNaN(d)) return false;
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (range === 'Daily') {
+    const endOfDay = new Date(startOfDay.getTime() + 86400000 - 1);
+    return d >= startOfDay && d <= endOfDay;
+  }
+  if (range === 'Weekly') {
+    const startOfWeek = new Date(startOfDay.getTime() - now.getDay() * 86400000);
+    return d >= startOfWeek;
+  }
+  if (range === 'Monthly') {
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }
+  return d.getFullYear() === now.getFullYear();
+}
+
+function DeletedPage({ onBack }) {
+  const [range, setRange] = useState('Daily');
+  const [deleted, setDeleted] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    getDeletedTodos()
+      .then(r => setDeleted(r.data.data.map(t => ({ ...t, id: t._id }))))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handlePermanentDelete = async (id) => {
+    try {
+      await permanentDeleteTodo(id);
+      setDeleted(p => p.filter(t => t.id !== id));
+    } catch {}
+  };
+
+  const rangeFiltered = deleted.filter(t => isInTrashRange(t, range));
+  const allCategories = [...new Set(rangeFiltered.map(t => t.category).filter(Boolean))];
+  const filtered = rangeFiltered.filter(t =>
+    (filterPriority === 'all' || t.priority === filterPriority) &&
+    (filterCategory === 'all' || t.category === filterCategory)
+  );
+
+  return (
+    <div className="td-page">
+      <div className="td-header">
+        <button className="td-back-btn" onClick={onBack}>Back</button>
+        <div className="td-header-left">
+          <Trash2 size={20} color="#ef4444" />
+          <h1 className="td-page-title">Deleted Tasks</h1>
+        </div>
+        <span className="td-summary-num" style={{ color: '#ef4444', marginLeft: 'auto' }}>{filtered.length}</span>
+      </div>
+
+      <div className="td-tabs">
+        {TRASH_RANGES.map(r => (
+          <button key={r} className={`td-tab ${range === r ? 'active' : ''}`} onClick={() => setRange(r)}>{r}</button>
+        ))}
+        <button className="td-filter-toggle" onClick={() => setShowFilters(s => !s)}>
+          <Filter size={13} /> Filters
         </button>
       </div>
 
-      <div className="td-card-body">
-        <div className="td-card-top">
-          <button
-            className={`td-card-title-btn ${task.completed ? 'td-card-title--done' : ''}`}
-            onClick={() => onSelect(task)}
-          >{task.title}</button>
-          {task.overdue && !task.completed && (
-            <span className="td-overdue-badge"><AlertCircle size={11} /> Overdue</span>
+      {showFilters && (
+        <div className="td-filters">
+          <select className="td-select" value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
+            <option value="all">All Priorities</option>
+            {Object.keys(PRIORITY).map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select className="td-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+            <option value="all">All Categories</option>
+            {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {(filterPriority !== 'all' || filterCategory !== 'all') && (
+            <button className="td-clear-filter" onClick={() => { setFilterPriority('all'); setFilterCategory('all'); }}>
+              <X size={12} /> Clear
+            </button>
           )}
         </div>
-        <div className="td-card-meta">
-          <span className="td-priority-tag" style={{ background: `${p.color}18`, color: p.color }}>
-            <Flag size={10} /> {p.label}
-          </span>
-          <span className="td-cat-tag">
-            <Tag size={10} /> {task.category}
-          </span>
-          {task.dueDate && (
-            <span className="td-date-tag">
-              <Calendar size={10} /> {fmtDate(task.dueDate)}
-            </span>
-          )}
-          {task.reminderEnabled && task.repeat && task.repeat !== 'none' && task.reminderTime && (
-            <span className="td-reminder-tag" title={`Repeats ${task.repeat} at ${task.reminderTime}`}>
-              <Bell size={10} /> {task.reminderTime} every {task.repeat}
-            </span>
-          )}
-          {task.reminderEnabled && (!task.repeat || task.repeat === 'none') && task.reminder && (
-            <span className="td-reminder-tag" title={`Reminder: ${fmtDateTime(task.reminder)}`}>
-              <Bell size={10} /> {fmtDateTime(task.reminder)}
-            </span>
-          )}
-          {task.repeat && task.repeat !== 'none' && (
-            <span className="td-repeat-tag"><Repeat size={10} /> {task.repeat}</span>
-          )}
+      )}
+
+      <div className="td-body">
+        {loading ? (
+          <div className="td-empty"><p>Loading…</p></div>
+        ) : filtered.length === 0 ? (
+          <div className="td-empty">
+            <Trash2 size={32} strokeWidth={1.2} />
+            <p>No deleted tasks for this period</p>
+          </div>
+        ) : (
+          <div className="td-list">
+            {filtered.map(t => {
+              const p = PRIORITY[t.priority] || PRIORITY.Medium;
+              return (
+                <div key={t.id} className="td-card" style={{ maxWidth: 400, opacity: 0.8 }}>
+                  <div className="td-card-body">
+                    <div className="td-card-top">
+                      <span className="td-card-title td-card-title--done">{t.title}</span>
+                    </div>
+                    <div className="td-card-meta">
+                      <span className="td-priority-tag" style={{ background: `${p.color}18`, color: p.color }}>
+                        <Flag size={10} /> {t.priority}
+                      </span>
+                      <span className="td-cat-tag"><Tag size={10} /> {t.category}</span>
+                      <span className="td-date-tag" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}>
+                        <Trash2 size={10} /> Deleted {fmtDate(t.deletedAt)}
+                      </span>
+                    </div>
+                    <div className="td-card-actions">
+                      <button className="td-trash-delete-btn" onClick={() => handlePermanentDelete(t.id)}>
+                        Delete Permanently
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── CompletedPage ──────────────────────────────────────────
+const COMPLETED_RANGES = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
+
+function isInCompletedRange(task, range) {
+  const completedAt = new Date(task.updatedAt || task.dueDate);
+  if (isNaN(completedAt)) return range === 'Yearly';
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (range === 'Daily') {
+    const endOfDay = new Date(startOfDay.getTime() + 86400000 - 1);
+    return completedAt >= startOfDay && completedAt <= endOfDay;
+  }
+  if (range === 'Weekly') {
+    const startOfWeek = new Date(startOfDay.getTime() - now.getDay() * 86400000);
+    return completedAt >= startOfWeek;
+  }
+  if (range === 'Monthly') {
+    return completedAt.getMonth() === now.getMonth() && completedAt.getFullYear() === now.getFullYear();
+  }
+  return completedAt.getFullYear() === now.getFullYear();
+}
+
+function CompletedPage({ tasks, onBack, onSelect, onComplete, onDelete }) {
+  const [range, setRange] = useState('Daily');
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+
+  const allCategories = [...new Set(tasks.map(t => t.category))];
+
+  const filtered = tasks.filter(t =>
+    t.completed &&
+    isInCompletedRange(t, range) &&
+    (filterPriority === 'all' || t.priority === filterPriority) &&
+    (filterCategory === 'all' || t.category === filterCategory)
+  );
+
+  return (
+    <div className="td-page">
+      <div className="td-header">
+        <button className="td-back-btn" onClick={onBack}>Back</button>
+        <div className="td-header-left">
+          <CheckSquare size={20} color={C.violet} />
+          <h1 className="td-page-title">Completed Tasks</h1>
         </div>
+        <span className="td-summary-num" style={{ color: C.sky, marginLeft: 'auto' }}>{filtered.length}</span>
       </div>
 
-      <div className="td-card-actions">
-        <button className="td-icon-btn" onClick={() => onEdit(task)} title="Edit"><Pencil size={13} /></button>
-        <button className="td-icon-btn td-icon-btn--red" onClick={() => onDelete(task.id)} title="Delete"><Trash2 size={13} /></button>
+      <div className="td-tabs">
+        {COMPLETED_RANGES.map(r => (
+          <button key={r} className={`td-tab ${range === r ? 'active' : ''}`} onClick={() => setRange(r)}>{r}</button>
+        ))}
+        <button className="td-filter-toggle" onClick={() => setShowFilters(s => !s)}>
+          <Filter size={13} /> Filters
+        </button>
+      </div>
+
+      {showFilters && (
+        <div className="td-filters">
+          <select className="td-select" value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
+            <option value="all">All Priorities</option>
+            {Object.keys(PRIORITY).map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select className="td-select" value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+            <option value="all">All Categories</option>
+            {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          {(filterPriority !== 'all' || filterCategory !== 'all') && (
+            <button className="td-clear-filter" onClick={() => { setFilterPriority('all'); setFilterCategory('all'); }}>
+              <X size={12} /> Clear
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="td-body">
+        {filtered.length === 0 ? (
+          <div className="td-empty">
+            <CheckSquare size={32} strokeWidth={1.2} />
+            <p>No completed tasks for this period</p>
+          </div>
+        ) : (
+          <div className="td-list">
+            {filtered.map(t => (
+              <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={() => {}} onDelete={onDelete} onSelect={onSelect} selected={false} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -302,6 +571,7 @@ function TaskCard({ task, onComplete, onEdit, onDelete, onSelect, selected }) {
 // ── TaskList ───────────────────────────────────────────────
 function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEdit, onDelete, onSelect, selectedId }) {
   const [showCompleted, setShowCompleted] = useState(false);
+  const [allDone, setAllDone] = useState(false);
 
   const tabTasks = tasks.filter(t => isInTab(t, tab));
   const filtered = tabTasks.filter(t =>
@@ -311,6 +581,14 @@ function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEd
 
   const pending   = filtered.filter(t => !t.completed);
   const completed = filtered.filter(t => t.completed);
+
+  useEffect(() => {
+    if (pending.length === 0 && completed.length > 0) {
+      setAllDone(true);
+    } else {
+      setAllDone(false);
+    }
+  }, [pending.length, completed.length]);
 
   useEffect(() => {
     if (selectedId && completed.find(t => t.id === selectedId)) {
@@ -328,27 +606,25 @@ function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEd
     );
   }
 
+  if (filtered.length === 0) {
+    return (
+      <div className="td-empty">
+        <CheckSquare size={32} strokeWidth={1.2} />
+        <p>No tasks match the selected filters</p>
+      </div>
+    );
+  }
+
   const renderCard = (t) => (
     <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} selected={selectedId === t.id} />
   );
 
   return (
     <div className="td-list">
-      {pending.length === 0 && completed.length > 0 && (
+      {allDone && (
         <div className="td-empty td-empty--sm">All tasks completed!</div>
       )}
       {pending.map(t => renderCard(t))}
-
-      {completed.length > 0 && (
-        <div className="td-completed-section">
-          <button className="td-completed-toggle" onClick={() => setShowCompleted(s => !s)}>
-            <Check size={13} />
-            Completed ({completed.length})
-            {showCompleted ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-          </button>
-          {showCompleted && completed.map(t => renderCard(t))}
-        </div>
-      )}
     </div>
   );
 }
@@ -400,6 +676,8 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
   const [filterCategory, setFilterCategory] = useState('all');
   const [showFilters, setShowFilters]       = useState(false);
   const [toasts, setToasts]   = useState([]);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
   const [detailTaskId, setDetailTaskId] = useState(null);
 
   const setField = (k, v) => setDraft(p => ({ ...p, [k]: v }));
@@ -438,7 +716,12 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
     try {
       const r = await toggleTodo(id);
       const updated = { ...r.data.data, id: r.data.data._id };
+      if (updated.completed && !updated.updatedAt) updated.updatedAt = new Date().toISOString();
       setTasks(p => p.map(t => t.id === id ? updated : t));
+      if (updated.completed) {
+        const today = new Date().toISOString().slice(0, 10);
+        await logComplete(id, { date: today, completed: true }).catch(() => {});
+      }
     } catch {}
   };
   const selectTask = (task) => {
@@ -502,11 +785,50 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
 
   return (
     <div className="td-page">
+
+      {/* ── full detail page view ── */}
+      {detailTaskId && (() => {
+        const detailTask = tasks.find(t => t.id === detailTaskId);
+        return detailTask ? (
+          <TodoDetail key={detailTaskId} task={detailTask} onClose={() => setDetailTaskId(null)} />
+        ) : null;
+      })()}
+
+      {/* ── completed page view ── */}
+      {!detailTaskId && showCompleted && (
+        <CompletedPage
+          tasks={tasks}
+          onBack={() => setShowCompleted(false)}
+          onSelect={selectTask}
+          onComplete={completeTask}
+          onDelete={deleteTask}
+        />
+      )}
+
+      {/* ── deleted page view ── */}
+      {!detailTaskId && showDeleted && (
+        <DeletedPage onBack={() => setShowDeleted(false)} />
+      )}
+
+      {/* ── main todo view ── */}
+      {!detailTaskId && !showCompleted && !showDeleted && (<>
       {/* ── header ── */}
       <div className="td-header">
-        <div className="td-header-left">
-          <CheckSquare size={22} color={C.violet} />
-          <h1 className="td-page-title">To-Do</h1>
+        <div className="td-header-row">
+          <div className="td-header-left">
+            <CheckSquare size={22} color={C.violet} />
+            <h1 className="td-page-title">To-Do</h1>
+          </div>
+          <div className="td-header-actions">
+            <button className="td-add-btn" onClick={openAdd}>Add Task</button>
+            <button className="td-completed-btn" onClick={() => setShowCompleted(true)}>
+              Completed
+              {tasks.filter(t => t.completed).length > 0 && (
+                <span className="td-completed-btn-count">{tasks.filter(t => t.completed).length}</span>
+              )}
+            </button>
+            <button className="td-trash-btn" onClick={() => setShowDeleted(true)}>Trash</button>
+          </div>
         </div>
         <div className="td-summary-strip">
           <span className="td-summary-item">
@@ -522,9 +844,6 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
             <span className="td-summary-label">overdue</span>
           </span>
         </div>
-        <button className="td-add-btn" onClick={openAdd}>
-          <Plus size={15} /> Add Task
-        </button>
       </div>
 
       {/* ── tabs ── */}
@@ -569,37 +888,20 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
         />
       )}
 
-      {/* ── task list + detail panel ── */}
-      <div className={`td-body${detailTaskId ? ' td-body--split' : ''}`}>
-        <div className="td-body-list">
-          <TaskList
-            tasks={tasks}
-            tab={tab}
-            filterPriority={filterPriority}
-            filterCategory={filterCategory}
-            onComplete={completeTask}
-            onEdit={openEdit}
-            onDelete={deleteTask}
-            onSelect={selectTask}
-            selectedId={detailTaskId}
-          />
-        </div>
-
-        {detailTaskId && (() => {
-          const detailTask = tasks.find(t => t.id === detailTaskId);
-          return detailTask ? (
-            <div className="td-body-detail">
-              <TodoDetail
-                key={detailTaskId}
-                task={detailTask}
-                onClose={() => setDetailTaskId(null)}
-              />
-            </div>
-          ) : null;
-        })()}
+      {/* ── task list ── */}
+      <div className="td-body">
+        <TaskList
+          tasks={tasks}
+          tab={tab}
+          filterPriority={filterPriority}
+          filterCategory={filterCategory}
+          onComplete={completeTask}
+          onEdit={openEdit}
+          onDelete={deleteTask}
+          onSelect={selectTask}
+          selectedId={detailTaskId}
+        />
       </div>
-
-
 
       {/* ── reminder toasts ── */}
       <ReminderToast
@@ -608,6 +910,7 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
         onSnooze={snoozeToast}
         onMarkDone={markDoneFromToast}
       />
+      </>)}
     </div>
   );
 }

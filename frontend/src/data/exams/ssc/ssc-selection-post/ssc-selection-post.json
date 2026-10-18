@@ -1,0 +1,13 @@
+{
+  "id": "ssc-selection-post",
+  "name": "SSC Selection Post",
+  "category": "ssc",
+  "fullName": "SSC Selection Post (Phase-wise)",
+  "type": "Other Exams",
+  "qualification": "10th / 12th / Graduate (varies by post)",
+  "posts": [
+    "Various posts at 10th level",
+    "Various posts at 12th level",
+    "Various posts at Graduate level"
+  ]
+}

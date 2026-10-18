@@ -1,0 +1,18 @@
+{
+  "id": "rrb-mi",
+  "name": "RRB MI",
+  "category": "rrb",
+  "fullName": "Railway Recruitment Board Ministerial and Isolated Categories",
+  "type": "Ministerial and Isolated",
+  "posts": [
+    "Stenographer",
+    "Teacher PGT",
+    "Teacher TGT",
+    "Teacher PRT",
+    "Librarian",
+    "Physical Training Instructor",
+    "Scientific Supervisor",
+    "Public Prosecutor",
+    "Chief Law Assistant"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "sports-quota",
+  "name": "Sports Quota",
+  "category": "rrb",
+  "fullName": "Railway Sports Quota Recruitment",
+  "type": "Other",
+  "note": "Recruitment based on sports achievements",
+  "posts": [
+    "Various posts under Sports Quota"
+  ]
+}

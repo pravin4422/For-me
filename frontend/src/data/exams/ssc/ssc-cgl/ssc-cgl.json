@@ -1,0 +1,16 @@
+{
+  "id": "ssc-cgl",
+  "name": "SSC CGL",
+  "category": "ssc",
+  "fullName": "Staff Selection Commission Combined Graduate Level",
+  "type": "Main Exams",
+  "qualification": "Graduate",
+  "posts": [
+    "Assistant Section Officer",
+    "Inspector (Income Tax)",
+    "Inspector (Excise)",
+    "Inspector (Customs)",
+    "Auditor",
+    "Accountant"
+  ]
+}

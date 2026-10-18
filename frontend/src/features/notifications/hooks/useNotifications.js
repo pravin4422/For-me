@@ -21,7 +21,7 @@ export function useNotifications({ category = null, page = 1, limit = 20 } = {})
       setUnreadCount(data.unreadCount ?? 0);
       setHasMore(data.hasMore ?? false);
     } catch {
-      // silently fail — local state still works
+      // silently fail
     } finally {
       setLoading(false);
     }
@@ -33,8 +33,36 @@ export function useNotifications({ category = null, page = 1, limit = 20 } = {})
     return () => clearInterval(pollRef.current);
   }, [category]);
 
+  // Save reminder notification to DB then add to local state
+  const addFromReminder = useCallback(async (notif) => {
+    try {
+      const { data } = await axiosInstance.post('/notifications', {
+        type:     notif.type     || 'reminder',
+        category: notif.category || 'Task',
+        title:    notif.title,
+        body:     notif.body    || '',
+        taskId:   notif.taskId  || null,
+      });
+      const saved = data.data;
+      setNotifications(prev => [saved, ...prev]);
+      setUnreadCount(c => c + 1);
+    } catch {
+      // fallback: add locally without DB
+      const local = { id: `local-${Date.now()}`, read: false, createdAt: new Date().toISOString(), ...notif };
+      setNotifications(prev => [local, ...prev]);
+      setUnreadCount(c => c + 1);
+    }
+  }, []);
+
+  // Listen to window event dispatched by TodoPage reminder scheduler
+  useEffect(() => {
+    const handler = (e) => addFromReminder(e.detail);
+    window.addEventListener('app:notification', handler);
+    return () => window.removeEventListener('app:notification', handler);
+  }, [addFromReminder]);
+
   const addLocal = useCallback((notif) => {
-    const newNotif = { id: `local-${Date.now()}`, read: false, timestamp: new Date().toISOString(), ...notif };
+    const newNotif = { id: `local-${Date.now()}`, read: false, createdAt: new Date().toISOString(), ...notif };
     setNotifications(prev => [newNotif, ...prev]);
     setUnreadCount(c => c + 1);
   }, []);
@@ -75,7 +103,7 @@ export function useNotifications({ category = null, page = 1, limit = 20 } = {})
   return {
     notifications, unreadCount, loading, hasMore,
     fetchMore: fetchNotifications,
-    addLocal,
+    addLocal, addFromReminder,
     markAsRead, markAsUnread, markAllAsRead,
     deleteNotification, clearAll,
   };

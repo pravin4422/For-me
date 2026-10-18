@@ -4,6 +4,8 @@ export const getTodos       = ()           => api.get('/todo');
 export const createTodo     = (data)       => api.post('/todo', data);
 export const updateTodo     = (id, data)   => api.put(`/todo/${id}`, data);
 export const deleteTodo     = (id)         => api.delete(`/todo/${id}`);
+export const getDeletedTodos    = ()       => api.get('/todo/trash');
+export const permanentDeleteTodo = (id)   => api.delete(`/todo/trash/${id}`);
 export const toggleTodo     = (id)         => api.patch(`/todo/${id}/toggle`);
 export const logComplete    = (id, data)   => api.post(`/todo/${id}/complete`, data);
 export const getOverview    = (id)         => api.get(`/todo/${id}/overview`);

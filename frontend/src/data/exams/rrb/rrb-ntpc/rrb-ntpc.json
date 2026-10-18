@@ -1,0 +1,23 @@
+{
+  "id": "rrb-ntpc",
+  "name": "RRB NTPC",
+  "category": "rrb",
+  "fullName": "Railway Recruitment Board Non-Technical Popular Categories",
+  "type": "Non-Technical",
+  "posts": {
+    "graduate_level": [
+      "Station Master",
+      "Goods Guard",
+      "Commercial cum Ticket Clerk",
+      "Traffic Assistant",
+      "Senior Clerk cum Typist",
+      "Junior Account Assistant"
+    ],
+    "undergraduate_level_12th": [
+      "Commercial cum Ticket Clerk",
+      "Accounts Clerk cum Typist",
+      "Junior Clerk cum Typist",
+      "Trains Clerk"
+    ]
+  }
+}

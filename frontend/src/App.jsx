@@ -135,6 +135,7 @@ function DashboardApp() {
         <Route path="todo/daily"            element={<TodoPage tab="Daily" />} />
         <Route path="todo/weekly"           element={<TodoPage tab="Weekly" />} />
         <Route path="todo/monthly"          element={<TodoPage tab="Monthly" />} />
+        <Route path="todo/yearly"            element={<TodoPage tab="Yearly" />} />
         <Route path="shopping"             element={<ShoppingPlanner />} />
         <Route path="shopping/items"       element={<ShoppingPlanner />} />
         <Route path="shopping/weekly"      element={<ShoppingPlanner />} />
