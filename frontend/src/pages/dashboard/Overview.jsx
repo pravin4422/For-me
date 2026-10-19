@@ -1,29 +1,19 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  CheckSquare, BookOpen, FileText, Target, Clock,
+  CheckSquare, BookOpen, Clock,
   Wallet, Heart, Briefcase, Bell, Sparkles, TrendingUp
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line
+  PieChart, Pie, Cell
 } from 'recharts';
 import DashboardCard from '../../components/cards/DashboardCard';
+import { getTodos } from '../../api/todo/index.js';
+import * as plannerApi from '../../api/study/plannerApi';
 import './Overview.css';
 
 const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-const TASKS = [
-  { id: 1, text: 'Complete RRB mock test', priority: 'high', done: false },
-  { id: 2, text: 'Revise Quantitative Aptitude', priority: 'medium', done: false },
-  { id: 3, text: 'Update budget for June', priority: 'low', done: true },
-  { id: 4, text: 'Read 20 pages of current affairs', priority: 'high', done: false },
-  { id: 5, text: 'Log today\'s water intake', priority: 'low', done: false },
-];
-
-const EXAMS = [
-  { name: 'RRB NTPC', days: 18, color: '#6366f1' },
-  { name: 'SSC CGL', days: 34, color: '#0ea5e9' },
-  { name: 'TNPSC Gr 2', days: 62, color: '#10b981' },
-];
 
 const BUDGET_DATA = [
   { name: 'Jan', income: 32000, spend: 21000 },
@@ -40,11 +30,6 @@ const TIME_DATA = [
   { name: 'Sleep', value: 7, color: '#8b5cf6' },
   { name: 'Exercise', value: 1, color: '#10b981' },
   { name: 'Other', value: 2, color: '#f59e0b' },
-];
-
-const MOCK_TREND = [
-  { t: 1, score: 62 }, { t: 2, score: 70 }, { t: 3, score: 67 },
-  { t: 4, score: 75 }, { t: 5, score: 80 }, { t: 6, score: 78 },
 ];
 
 const HEALTH = [
@@ -94,8 +79,56 @@ function RingProgress({ value, max, color, label, unit }) {
   );
 }
 
+const STUDY_TYPES = [
+  { type: 'planner',   label: 'Study Planner',    color: '#6366f1' },
+  { type: 'revision',  label: 'Revision Tracker', color: '#8b5cf6' },
+  { type: 'practice',  label: 'Practice',         color: '#0ea5e9' },
+  { type: 'mock-test', label: 'Mock Tests',        color: '#10b981' },
+];
+
 export default function Overview() {
+  const navigate = useNavigate();
   const quote = QUOTES[new Date().getDay() % QUOTES.length];
+
+  const [tasks, setTasks] = useState([]);
+  useEffect(() => {
+    getTodos()
+      .then(r => setTasks(r.data.data.map(t => ({ ...t, id: t._id }))))
+      .catch(() => {});
+  }, []);
+
+  const [studyProgress, setStudyProgress] = useState([]);
+  useEffect(() => {
+    Promise.all(
+      STUDY_TYPES.map(t =>
+        plannerApi.getPlans(null, t.type).then(async r => {
+          const folders = r.data.data;
+          if (folders.length === 0) return { ...t, done: 0, total: 0 };
+          const results = await Promise.all(folders.map(f => plannerApi.getItems(f._id).then(ir => ir.data.data)));
+          const all = results.flat();
+          return { ...t, done: all.filter(i => i.completed).length, total: all.length };
+        })
+      )
+    ).then(setStudyProgress).catch(() => {});
+  }, []);
+
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay   = new Date(startOfDay.getTime() + 86400000 - 1);
+  const todayTasks = tasks.filter(t => {
+    if (t.repeat && t.repeat !== 'none') return true;
+    if (!t.dueDate) return true;
+    const d = new Date(t.dueDate);
+    return d >= startOfDay && d <= endOfDay;
+  });
+  const pendingToday   = todayTasks.filter(t => !t.completed);
+  const completedToday = todayTasks.filter(t => t.completed);
+  const overdueTasks   = tasks.filter(t => t.overdue && !t.completed);
+  const displayTasks   = [...pendingToday, ...completedToday];
+
+  const totalDone  = studyProgress.reduce((s, t) => s + t.done, 0);
+  const totalItems = studyProgress.reduce((s, t) => s + t.total, 0);
+  const overallPct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
   return (
     <div className="overview-grid">
@@ -105,68 +138,63 @@ export default function Overview() {
         <div className="today-strip">
           <div className="today-date">{today}</div>
           <div className="today-stats">
-            <div className="stat-chip"><span className="stat-num">3</span><span>Tasks Due</span></div>
+            <div className="stat-chip"><span className="stat-num">{pendingToday.length}</span><span>Tasks Due</span></div>
+            <div className="stat-chip"><span className="stat-num">{completedToday.length}</span><span>Completed</span></div>
+            <div className="stat-chip"><span className="stat-num">{overdueTasks.length}</span><span>Overdue</span></div>
             <div className="stat-chip"><span className="stat-num">78%</span><span>Study Goal</span></div>
             <div className="stat-chip"><span className="stat-num">18d</span><span>Next Exam</span></div>
-            <div className="stat-chip"><span className="stat-num">₹17k</span><span>Balance</span></div>
           </div>
         </div>
       </DashboardCard>
 
       {/* 2. To-Do */}
       <DashboardCard title="To-Do" icon={<CheckSquare size={16} />} viewAllLink="/dashboard/todo/daily">
-        <ul className="todo-list">
-          {TASKS.map(t => (
-            <li key={t.id} className={`todo-item ${t.done ? 'done' : ''}`}>
-              <span className={`priority-dot p-${t.priority}`} />
-              <span className="todo-text">{t.text}</span>
-              <span className={`priority-tag p-${t.priority}`}>{t.priority}</span>
-            </li>
-          ))}
-        </ul>
-        <button className="quick-add-btn">+ Add Task</button>
+        {displayTasks.length === 0 ? (
+          <div className="todo-empty">No tasks for today</div>
+        ) : (
+          <ul className="todo-list">
+            {displayTasks.map(t => (
+              <li key={t.id} className={`todo-item ${t.completed ? 'done' : ''}`}>
+                <span className={`priority-dot p-${(t.priority || 'medium').toLowerCase()}`} />
+                <span className="todo-text">{t.title}</span>
+                <span className={`priority-tag p-${(t.priority || 'medium').toLowerCase()}`}>{t.priority}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button className="quick-add-btn" onClick={() => navigate('/dashboard/todo/daily')}>+ Add Task</button>
       </DashboardCard>
 
       {/* 3. Study Progress */}
       <DashboardCard title="Study Progress" icon={<BookOpen size={16} />} viewAllLink="/dashboard/study/planner">
-        <div className="study-subject">Quantitative Aptitude</div>
-        <div className="study-topic">Current: Number System</div>
-        <div className="progress-bar-wrap">
-          <div className="progress-bar"><div className="progress-fill" style={{ width: '68%' }} /></div>
-          <span className="progress-pct">68%</span>
-        </div>
-        <div className="streak-row">
-          <span className="streak-badge">🔥 12-day streak</span>
-          <span className="study-muted">Next: Algebra</span>
-        </div>
-      </DashboardCard>
-
-      {/* 4. Upcoming Exams */}
-      <DashboardCard title="Upcoming Exams" icon={<FileText size={16} />} viewAllLink="/dashboard/exams">
-        <div className="exam-chips">
-          {EXAMS.map(e => (
-            <div key={e.name} className="exam-chip" style={{ borderColor: e.color }}>
-              <span className="exam-name">{e.name}</span>
-              <span className="exam-days" style={{ color: e.color }}>{e.days}d</span>
+        {studyProgress.length === 0 ? (
+          <div className="tab-loading" style={{ padding: '12px 0' }}>Loading…</div>
+        ) : (
+          <div className="study-progress-list">
+            <div className="study-overall-row">
+              <span className="study-overall-label">Overall</span>
+              <span className="study-overall-pct" style={{ color: 'var(--accent)' }}>{overallPct}%</span>
             </div>
-          ))}
-        </div>
-      </DashboardCard>
-
-      {/* 5. Mock Test Results */}
-      <DashboardCard title="Mock Test Results" icon={<Target size={16} />} viewAllLink="/dashboard/mocktest/results">
-        <div className="mock-stats">
-          <div className="mock-score">78<span>/100</span></div>
-          <div className="mock-meta">
-            <span className="mock-acc">Accuracy: 82%</span>
-            <span className="mock-time">Time: 48 min</span>
+            <div className="progress-bar-wrap" style={{ marginBottom: 12 }}>
+              <div className="progress-bar"><div className="progress-fill" style={{ width: `${overallPct}%` }} /></div>
+            </div>
+            {studyProgress.map(s => {
+              const pct = s.total > 0 ? Math.round((s.done / s.total) * 100) : 0;
+              return (
+                <div key={s.type} className="study-type-row">
+                  <div className="study-type-top">
+                    <span className="study-type-label">{s.label}</span>
+                    <span className="study-type-counts">{s.done}/{s.total}</span>
+                    <span className="study-type-pct" style={{ color: s.color }}>{pct}%</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${pct}%`, background: s.color }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-        <ResponsiveContainer width="100%" height={60}>
-          <LineChart data={MOCK_TREND}>
-            <Line type="monotone" dataKey="score" stroke="var(--accent)" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
+        )}
       </DashboardCard>
 
       {/* 6. Time Summary */}

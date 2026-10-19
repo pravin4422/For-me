@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  BookOpen, CalendarDays, FileText, RotateCcw,
+  BookOpen, CalendarDays, RotateCcw,
   PenLine, ClipboardList, BarChart2, Zap,
   ChevronDown, ChevronRight, FlaskConical,
   Table, Sigma, Divide, Percent, Calculator
@@ -13,8 +13,6 @@ const STUDY_NAV = {
   path: '/dashboard/study/planner',
   children: [
     { label: 'Study Planner',    path: '/dashboard/study/planner',    icon: <CalendarDays size={15} /> },
-    { label: 'Subjects',         path: '/dashboard/study/subjects',   icon: <BookOpen size={15} /> },
-    { label: 'Topics',           path: '/dashboard/study/topics',     icon: <FileText size={15} /> },
     { label: 'Revision Tracker', path: '/dashboard/study/revision',   icon: <RotateCcw size={15} /> },
     { label: 'Practice',         path: '/dashboard/study/practice',   icon: <PenLine size={15} /> },
     { label: 'Mock Tests',       path: '/dashboard/study/mock-tests', icon: <ClipboardList size={15} /> },

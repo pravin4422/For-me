@@ -1,2 +1,132 @@
 /* AnalysisTab.css */
-/* tab-container, tab-header, tab-header__left, tab-empty → TabShared.css */
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.analysis-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.analysis-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-heading);
+}
+
+.analysis-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.analysis-card__select {
+  width: 100%;
+}
+
+.analysis-card__body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ── Stats ── */
+.analysis-card__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.analysis-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.analysis-stat__count {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+.analysis-stat__label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.analysis-stat--done   .analysis-stat__count { color: var(--accent); }
+.analysis-stat--undone .analysis-stat__count { color: #ef4444; }
+
+/* ── Topic list ── */
+.analysis-topic-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.analysis-topic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--bg-surface-2, var(--bg-surface));
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.analysis-topic--done {
+  opacity: 0.65;
+}
+
+.analysis-topic__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+}
+
+.analysis-topic__dot--done {
+  background: var(--accent);
+}
+
+.analysis-topic__text {
+  flex: 1;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analysis-topic--done .analysis-topic__text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.analysis-topic__status {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.analysis-topic--done .analysis-topic__status {
+  color: var(--accent);
+}

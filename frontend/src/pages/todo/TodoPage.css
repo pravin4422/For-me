@@ -933,6 +933,71 @@
   .td-repeat-btn { padding: 4px 9px; font-size: 11px; }
 }
 
+/* ── task progress dots ─────────────────────────────────── */
+.td-progress-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 0 2px;
+  flex-wrap: wrap;
+}
+
+.td-progress-dots--full {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.td-progress-dots--full .td-prog-dot {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+}
+
+.td-prog-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.td-prog-dot:hover:not(.disabled):not(.done) {
+  border-color: var(--td-violet);
+  color: var(--td-violet);
+  transform: scale(1.08);
+}
+
+.td-prog-dot.today {
+  border-color: var(--td-violet);
+  border-width: 2px;
+  color: var(--td-violet);
+}
+
+.td-prog-dot.done {
+  background: linear-gradient(135deg, var(--td-indigo), var(--td-violet));
+  border-color: transparent;
+  color: #fff;
+}
+
+.td-prog-dot.done.today {
+  box-shadow: 0 0 0 2px rgba(95,89,247,0.35);
+}
+
+.td-prog-dot.disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
 /* ── description textarea ────────────────────────────────── */
 .td-textarea {
   width: 100%;

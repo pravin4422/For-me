@@ -730,3 +730,153 @@
   .study-dashboard__content { padding: 16px; }
   .subject-docs { margin-left: 0; }
 }
+
+/* ── StudyPlannerTab ───────────────────────────────────────── */
+.planner-folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.planner-folder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  text-align: center;
+}
+.planner-folder:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--accent-border);
+}
+
+.planner-folder__icon { color: var(--accent); }
+
+.planner-folder__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  word-break: break-word;
+}
+
+.planner-folder__delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.planner-folder:hover .planner-folder__delete { opacity: 1; }
+
+.planner-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.planner-input-row .modal__input { flex: 1; }
+
+.planner-item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.planner-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.planner-item__text {
+  font-size: 13.5px;
+  color: var(--text-body);
+  flex: 1;
+}
+
+/* ── Planner breadcrumb ────────────────────────────────────── */
+.planner-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px 0 2px;
+  margin-bottom: 4px;
+}
+
+.planner-bc__row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.planner-bc__sep {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.planner-bc__item {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font-size: 13px;
+  color: var(--accent);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+.planner-bc__item:hover { background: var(--accent-bg); }
+.planner-bc__item--active {
+  color: var(--text-heading);
+  font-weight: 600;
+  cursor: default;
+}
+.planner-bc__item--active:hover { background: none; }
+
+.planner-empty-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 4px 0;
+}
+
+/* ── Planner topic checkbox ────────────────────────────────── */
+.planner-checkbox {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  background: var(--bg-surface-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+  padding: 0;
+}
+.planner-checkbox:hover { border-color: var(--accent); }
+.planner-checkbox--checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.planner-item--done .planner-item__text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}

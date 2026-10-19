@@ -26,6 +26,7 @@
 
 /* To-Do */
 .todo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.todo-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 12px 0; }
 .todo-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .todo-item.done .todo-text { text-decoration: line-through; color: var(--text-muted); }
 .priority-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
@@ -51,6 +52,17 @@
   transition: background 0.15s;
 }
 .quick-add-btn:hover { background: var(--accent); color: #fff; }
+
+/* Study Progress - live */
+.study-progress-list { display: flex; flex-direction: column; gap: 10px; }
+.study-overall-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.study-overall-label { font-size: 13px; font-weight: 700; color: var(--text-heading); }
+.study-overall-pct { font-size: 15px; font-weight: 800; }
+.study-type-row { display: flex; flex-direction: column; gap: 4px; }
+.study-type-top { display: flex; align-items: center; gap: 6px; }
+.study-type-label { font-size: 12px; color: var(--text-body); flex: 1; }
+.study-type-counts { font-size: 11px; color: var(--text-muted); }
+.study-type-pct { font-size: 12px; font-weight: 700; min-width: 34px; text-align: right; }
 
 /* Study */
 .study-subject { font-size: 15px; font-weight: 700; color: var(--text-heading); margin-bottom: 2px; }

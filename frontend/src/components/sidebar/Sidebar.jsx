@@ -22,6 +22,7 @@ const NAV = [
           { label: 'Daily Tasks',   path: '/dashboard/todo/daily' },
           { label: 'Weekly Tasks',  path: '/dashboard/todo/weekly' },
           { label: 'Monthly Tasks', path: '/dashboard/todo/monthly' },
+          { label: 'Yearly Tasks',  path: '/dashboard/todo/yearly' },
         ]
       },
     ]
@@ -32,8 +33,6 @@ const NAV = [
       {
         label: 'Study', icon: <BookOpen size={18} />, path: '/dashboard/study/planner', children: [
           { label: 'Study Planner',    path: '/dashboard/study/planner' },
-          { label: 'Subjects',         path: '/dashboard/study/subjects' },
-          { label: 'Topics',           path: '/dashboard/study/topics' },
           { label: 'Revision Tracker', path: '/dashboard/study/revision' },
           { label: 'Practice',         path: '/dashboard/study/practice' },
           { label: 'Mock Tests',       path: '/dashboard/study/mock-tests' },
@@ -274,7 +273,7 @@ function NavItem({ item, collapsed, depth = 0 }) {
 
 export default function Sidebar({ collapsed, onClose, mobile, onToggle }) {
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout, user, profilePictureUrl } = useAuth();
   const [popupOpen, setPopupOpen]   = useState(false);
   const popupRef                    = useRef(null);
 
@@ -292,7 +291,7 @@ export default function Sidebar({ collapsed, onClose, mobile, onToggle }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [popupOpen]);
 
-  const pictureUrl = user?.photoURL || null;
+  const pictureUrl = profilePictureUrl || user?.photoURL || null;
   const userName   = user?.displayName || user?.email?.split('@')[0] || 'My Account';
   const userEmail  = user?.email || '';
 

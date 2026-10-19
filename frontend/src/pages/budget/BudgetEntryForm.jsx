@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Paperclip } from 'lucide-react';
 
 export default function BudgetEntryForm({ fields, onAdd, accentColor = '#5f59f7' }) {
-  const init = Object.fromEntries(fields.map(f => [f.key, '']));
+  const init = Object.fromEntries(fields.map(f => [f.key, f.type === 'file' ? null : '']));
   const [form, setForm] = useState(init);
   const [open, setOpen] = useState(false);
 
@@ -10,7 +10,7 @@ export default function BudgetEntryForm({ fields, onAdd, accentColor = '#5f59f7'
 
   const submit = (e) => {
     e.preventDefault();
-    const required = fields.filter(f => f.required !== false);
+    const required = fields.filter(f => f.required !== false && f.type !== 'file');
     if (required.some(f => !form[f.key])) return;
     onAdd({ ...form, id: Date.now() });
     setForm(init);
@@ -27,16 +27,38 @@ export default function BudgetEntryForm({ fields, onAdd, accentColor = '#5f59f7'
     <form className="bgt-form" onSubmit={submit}>
       <div className="bgt-form-grid">
         {fields.map(f => (
-          <div key={f.key} className="bgt-field">
+          <div key={f.key} className={`bgt-field ${f.type === 'textarea' || f.type === 'file' ? 'bgt-field-full' : ''}`}>
             <label>{f.label}</label>
             {f.type === 'textarea' ? (
-              <textarea value={form[f.key]} onChange={e => handle(f.key, e.target.value)} placeholder={f.placeholder || f.label} rows={2} />
+              <textarea value={form[f.key]} onChange={e => handle(f.key, e.target.value)} placeholder={f.label} rows={2} />
+            ) : f.type === 'select' ? (
+              <select value={form[f.key]} onChange={e => handle(f.key, e.target.value)}>
+                <option value="">Select {f.label}</option>
+                {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            ) : f.type === 'file' ? (
+              <div className="bgt-file-input">
+                <label className="bgt-file-label" style={{ borderColor: accentColor }}>
+                  <Paperclip size={14} />
+                  <span>{form[f.key] ? form[f.key].name : 'Upload document / image'}</span>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
+                    onChange={e => handle(f.key, e.target.files[0] || null)}
+                  />
+                </label>
+                {form[f.key] && (
+                  <button type="button" className="bgt-icon-btn red" onClick={() => handle(f.key, null)}>
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
             ) : (
               <input
                 type={f.type || 'text'}
-                value={form[f.key]}
+                value={form[f.key] || ''}
                 onChange={e => handle(f.key, e.target.value)}
-                placeholder={f.placeholder || f.label}
+                placeholder={f.label}
               />
             )}
           </div>

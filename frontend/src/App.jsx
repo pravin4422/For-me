@@ -37,6 +37,7 @@ import MockTestAnalysisScreen from './features/mock-test/MockTestAnalysisScreen'
 import MockTestResultsPage    from './pages/mocktest/MockTestResultsPage';
 import MockTestAnalysisPage   from './pages/mocktest/MockTestAnalysisPage';
 import NotificationCenterPage from './features/notifications/NotificationCenterPage';
+import { NotificationProvider } from './features/notifications/context/NotificationContext';
 import {
   GovtOpportunities, PrivateIT, CompanyInformation,
   CompanyWatchlist, RequiredSkills, InterviewPrep, CareerResources
@@ -121,6 +122,7 @@ function DashboardApp() {
   const handleLogout = async () => { await logout(); navigate('/'); };
 
   return (
+    <NotificationProvider>
     <DashboardLayout onLogout={handleLogout}>
       <Routes>
         <Route index                     element={<Overview />} />
@@ -198,6 +200,7 @@ function DashboardApp() {
         <Route path="*"                  element={<Overview />} />
       </Routes>
     </DashboardLayout>
+    </NotificationProvider>
   );
 }
 

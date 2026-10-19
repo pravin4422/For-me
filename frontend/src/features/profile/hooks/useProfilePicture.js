@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import api from '../../../api/axios/axiosInstance';
+import { useAuth } from '../../../context/AuthContext';
 
 export function useProfilePicture(setProfile) {
   const [uploading, setUploading] = useState(false);
   const [progress,  setProgress]  = useState(0);
+  const { setProfilePictureUrl } = useAuth();
 
   const uploadPicture = async (file) => {
     setUploading(true);
@@ -16,6 +18,7 @@ export function useProfilePicture(setProfile) {
         onUploadProgress: (e) => setProgress(Math.round((e.loaded * 100) / e.total)),
       });
       setProfile(p => ({ ...p, pictureUrl: r.data.pictureUrl, pictureRef: r.data.pictureRef }));
+      setProfilePictureUrl(r.data.pictureUrl);
       return r.data;
     } finally {
       setUploading(false);
@@ -26,6 +29,7 @@ export function useProfilePicture(setProfile) {
   const removePicture = async () => {
     await api.delete('/settings/profile/picture');
     setProfile(p => ({ ...p, pictureUrl: null, pictureRef: null }));
+    setProfilePictureUrl(null);
   };
 
   return { uploading, progress, uploadPicture, removePicture };

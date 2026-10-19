@@ -1,12 +1,10 @@
 import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
 import './study.css';
 import {
-  CalendarDays, BookOpen, FileText, RotateCcw,
+  CalendarDays, RotateCcw,
   PenLine, ClipboardList, BarChart2, Zap
 } from 'lucide-react';
 import StudyPlannerTab    from './tabs/StudyPlannerTab';
-import SubjectsTab        from './tabs/SubjectsTab';
-import TopicsTab          from './tabs/TopicsTab';
 import RevisionTrackerTab from './tabs/RevisionTrackerTab';
 import PracticeTab        from './tabs/PracticeTab';
 import MockTestsTab       from './tabs/MockTestsTab';
@@ -16,8 +14,6 @@ import SpeedMathDashboard from './speed-math/SpeedMathDashboard';
 const BASE = '/dashboard/study';
 const TABS = [
   { path: `${BASE}/planner`,    label: 'Study Planner',   icon: <CalendarDays size={15} /> },
-  { path: `${BASE}/subjects`,   label: 'Subjects',         icon: <BookOpen size={15} /> },
-  { path: `${BASE}/topics`,     label: 'Topics',           icon: <FileText size={15} /> },
   { path: `${BASE}/revision`,   label: 'Revision Tracker', icon: <RotateCcw size={15} /> },
   { path: `${BASE}/practice`,   label: 'Practice',         icon: <PenLine size={15} /> },
   { path: `${BASE}/mock-tests`, label: 'Mock Tests',       icon: <ClipboardList size={15} /> },
@@ -50,8 +46,6 @@ export default function StudyDashboard() {
         <Routes>
           <Route index                    element={<Navigate to="planner" replace />} />
           <Route path="planner"           element={<StudyPlannerTab />} />
-          <Route path="subjects"          element={<SubjectsTab />} />
-          <Route path="topics"            element={<TopicsTab />} />
           <Route path="revision"          element={<RevisionTrackerTab />} />
           <Route path="practice"          element={<PracticeTab />} />
           <Route path="mock-tests"        element={<MockTestsTab />} />

@@ -629,3 +629,259 @@
   .bgt-doc-upload input,
   .bgt-doc-upload select { width: 100%; }
 }
+
+/* ── income stats cards ──────────────────────────────────── */
+.bgt-income-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.bgt-income-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bgt-income-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.bgt-income-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* ── select field ────────────────────────────────────────── */
+.bgt-field select,
+.bgt-field-sm select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg-main);
+  color: var(--text-body);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.bgt-field select:focus,
+.bgt-field-sm select:focus {
+  border-color: var(--bgt-violet);
+}
+
+/* ── file input ──────────────────────────────────────────── */
+.bgt-field-full {
+  grid-column: 1 / -1;
+}
+
+.bgt-file-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bgt-file-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px dashed;
+  border-radius: 7px;
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.bgt-file-label:hover {
+  background: rgba(95, 89, 247, 0.06);
+  color: var(--bgt-violet);
+}
+
+.bgt-file-label input[type="file"] {
+  display: none;
+}
+
+.bgt-file-label span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── row badges ──────────────────────────────────────────── */
+.bgt-row-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(95, 89, 247, 0.12);
+  color: var(--bgt-violet);
+}
+
+.bgt-row-badge.muted {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+/* ── attachment chip ─────────────────────────────────────── */
+.bgt-row-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--bgt-sky);
+  background: rgba(68, 194, 253, 0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── responsive ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .bgt-income-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── expense stats cards ─────────────────────────────────── */
+.bgt-expense-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .bgt-expense-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .bgt-expense-stats { grid-template-columns: 1fr; }
+}
+
+/* ── monthly calculator header ───────────────────────────── */
+.bgt-calc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bgt-calc-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin: 0;
+}
+
+.bgt-month-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bgt-month-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  min-width: 130px;
+  text-align: center;
+}
+
+/* ── category breakdown cards ────────────────────────────── */
+.bgt-cat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.bgt-cat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bgt-cat-card-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bgt-cat-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bgt-cat-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-body);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bgt-cat-card-pct {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bgt-cat-card-amt {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-heading);
+  letter-spacing: -0.4px;
+}
+
+.bgt-cat-card-bar {
+  height: 4px;
+  background: rgba(95, 89, 247, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bgt-cat-card-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+@media (max-width: 640px) {
+  .bgt-cat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

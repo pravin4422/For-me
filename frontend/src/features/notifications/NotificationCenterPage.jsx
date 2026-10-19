@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCheck, SlidersHorizontal } from 'lucide-react';
-import { useNotifications } from './hooks/useNotifications';
+import { useNotificationContext } from './context/NotificationContext';
 import NotificationItem from './components/NotificationItem';
 import NotificationFilterTabs from './components/NotificationFilterTabs';
 import NotificationSettingsPanel from './components/NotificationSettingsPanel';
@@ -11,38 +11,33 @@ import './NotificationCenterPage.css';
 export default function NotificationCenterPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(null);
-  const [page, setPage]                     = useState(1);
   const [showSettings, setShowSettings]     = useState(false);
   const observerRef = useRef(null);
 
   const {
-    notifications, loading, hasMore,
+    notifications: allNotifications, loading, hasMore,
     markAsRead, markAllAsRead, deleteNotification, fetchMore,
-  } = useNotifications({ category: activeCategory, page });
+  } = useNotificationContext();
 
-  // Reset page on filter change
-  useEffect(() => { setPage(1); }, [activeCategory]);
+  // Filter locally by category — no extra API call needed
+  const notifications = activeCategory
+    ? allNotifications.filter(n => n.category === activeCategory)
+    : allNotifications;
 
-  // Infinite scroll sentinel
+  // Infinite scroll sentinel — loads more from server when all items are shown
   const sentinelRef = useCallback(node => {
     if (observerRef.current) observerRef.current.disconnect();
     if (!node) return;
     observerRef.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
-        setPage(p => p + 1);
-      }
+      if (entries[0].isIntersecting && hasMore && !loading) fetchMore(false, 2);
     });
     observerRef.current.observe(node);
-  }, [hasMore, loading]);
-
-  useEffect(() => {
-    if (page > 1) fetchMore();
-  }, [page]);
+  }, [hasMore, loading, fetchMore]);
 
   return (
     <div className="notif-center">
       <div className="notif-center__header">
-        <h2 className="notif-center__title" onClick={() => { setActiveCategory(null); setPage(1); setShowSettings(false); navigate('/dashboard/notifications'); }} style={{ cursor: 'pointer' }}>Notifications</h2>
+        <h2 className="notif-center__title" onClick={() => { setActiveCategory(null); setShowSettings(false); navigate('/dashboard/notifications'); }} style={{ cursor: 'pointer' }}>Notifications</h2>
         <div className="notif-center__actions">
           <button className="notif-center__btn" onClick={markAllAsRead}>
             <CheckCheck size={15} /> Mark all read

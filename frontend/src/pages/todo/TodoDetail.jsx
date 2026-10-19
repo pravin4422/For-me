@@ -223,9 +223,9 @@ function SectionCalendar({ task, mongoId, onLogChange }) {
 // ── Best Streaks ───────────────────────────────────────────
 function SectionStreaks({ task, mongoId, refreshKey }) {
   const isRecurring = task.taskType === 'RECURRING';
-  const [data, setData]     = useState(null);
+  const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]   = useState(null);
+  const [error, setError]     = useState(null);
 
   useEffect(() => {
     if (!mongoId || !isRecurring) { setData(null); return; }
@@ -237,30 +237,43 @@ function SectionStreaks({ task, mongoId, refreshKey }) {
 
   if (!isRecurring) return null;
 
+  // width of current streak bar relative to best streak
+  const currentPct = data && data.bestStreak > 0
+    ? Math.round((data.currentStreak / data.bestStreak) * 100)
+    : 0;
+
   return (
     <div className="tdd-section tdd-section--streaks">
       <span className="tdd-section-label">Best Streaks</span>
       {loading && <div className="tdd-state">Loading…</div>}
       {error   && <div className="tdd-state tdd-state--err">{error}</div>}
-      {!loading && !error && !mongoId && <div className="tdd-state">Save task to see streaks.</div>}
-      {!loading && !error && mongoId && !data && <div className="tdd-state">No streak data yet.</div>}
-      {!loading && !error && mongoId && data && data.bestStreak === 0 && (
+      {!loading && !error && !data && <div className="tdd-state">No streak data yet.</div>}
+      {!loading && !error && data && data.bestStreak === 0 && (
         <div className="tdd-state">No streaks yet — complete this task consistently to build one.</div>
       )}
-      {!loading && !error && mongoId && data && data.bestStreak > 0 && (
+      {!loading && !error && data && data.bestStreak > 0 && (
         <div className="tdd-streak-wrap">
-          <div className="tdd-streak-row">
-            <span className="tdd-streak-meta">{fmtStreakDate(data.bestStreakStart)}</span>
+          {/* best streak bar */}
+          <div className="tdd-streak-block">
+            <div className="tdd-streak-block-label">Best</div>
             <div className="tdd-streak-bar-track">
-              <div className="tdd-streak-bar-fill" style={{ width: data.bestStreak > 0 ? '100%' : '0%' }}>
+              <div className="tdd-streak-bar-fill" style={{ width: '100%' }}>
                 <span className="tdd-streak-bar-num">{data.bestStreak}d</span>
               </div>
             </div>
-            <span className="tdd-streak-meta tdd-streak-meta--right">{fmtStreakDate(data.bestStreakEnd)}</span>
+            <div className="tdd-streak-block-dates">
+              <span>{fmtStreakDate(data.bestStreakStart)}</span>
+              <span>{fmtStreakDate(data.bestStreakEnd)}</span>
+            </div>
           </div>
-          <div className="tdd-streak-current">
-            <span className="tdd-streak-lbl">Current streak</span>
-            <span className="tdd-streak-val">{data.currentStreak} day{data.currentStreak !== 1 ? 's' : ''}</span>
+          {/* current streak bar — width relative to best */}
+          <div className="tdd-streak-block">
+            <div className="tdd-streak-block-label">Current</div>
+            <div className="tdd-streak-bar-track">
+              <div className="tdd-streak-bar-fill tdd-streak-bar-fill--current" style={{ width: `${Math.max(currentPct, data.currentStreak > 0 ? 8 : 0)}%` }}>
+                {data.currentStreak > 0 && <span className="tdd-streak-bar-num">{data.currentStreak}d</span>}
+              </div>
+            </div>
           </div>
         </div>
       )}

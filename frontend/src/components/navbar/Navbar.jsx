@@ -24,11 +24,11 @@ export default function Navbar({
   const hideTimer = useRef(null);
 
   const { theme, toggle } = useTheme();
-  const { user: firebaseUser } = useAuth();
+  const { user: firebaseUser, profilePictureUrl } = useAuth();
 
   const displayName = firebaseUser?.displayName || firebaseUser?.email?.split('@')[0] || 'User';
   const displayEmail = firebaseUser?.email || '';
-  const photoURL = firebaseUser?.photoURL || null;
+  const photoURL = profilePictureUrl || firebaseUser?.photoURL || null;
   const initials = displayName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
   const nav = (path) => {

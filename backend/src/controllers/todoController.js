@@ -182,11 +182,13 @@ async function recalcStreaks(todo, userId) {
   const logs = await TodoLog.find({ todoId: todo._id, userId }).sort({ date: 1 }).lean();
   const completedSet = new Set(logs.filter(l => l.completed).map(l => l.date.getTime()));
 
-  // use createdAt as origin so missed days before first log are counted
+  // use the first completed log date as origin (not createdAt)
+  // so days before the user ever started are not counted as missed
   const today = midnightUTC(new Date());
+  const firstLog = logs.length > 0 ? midnightUTC(new Date(logs[0].date)) : today;
   const origin = todo.startDate
     ? midnightUTC(new Date(todo.startDate))
-    : midnightUTC(new Date(todo.createdAt));
+    : firstLog;
 
   const dueDates = [];
   const cur = new Date(origin);

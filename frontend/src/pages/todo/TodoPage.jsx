@@ -6,7 +6,7 @@ import {
   Tag, Calendar, Flag, Filter, Repeat, ArrowLeft
 } from 'lucide-react';
 import useReminderScheduler from '../../hooks/useReminderScheduler';
-import { getTodos, createTodo, updateTodo, deleteTodo, toggleTodo, logComplete, getDeletedTodos, permanentDeleteTodo } from '../../api/todo/index.js';
+import { getTodos, createTodo, updateTodo, deleteTodo, toggleTodo, logComplete, getCalendar, getDeletedTodos, permanentDeleteTodo } from '../../api/todo/index.js';
 import TodoDetail from './TodoDetail';
 import './TodoPage.css';
 
@@ -283,22 +283,179 @@ function TaskForm({ draft, onChange, onSave, onCancel, isEdit }) {
   );
 }
 
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── helpers: build dot slots based on tab ──────────────────
+// compact=true → 5 dots around today (for task card)
+// compact=false → full range dots (for completed page)
+function buildDots(tab, compact = true) {
+  const now = new Date();
+  const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dots = [];
+
+  if (compact) {
+    // 5 dots around today for all tabs (task card view)
+    for (let i = -2; i <= 2; i++) {
+      const d = new Date(todayUTC); d.setUTCDate(d.getUTCDate() + i);
+      dots.push({ date: d, label: d.getUTCDate(), isToday: i === 0 });
+    }
+    return dots;
+  }
+
+  // full range dots for completed page
+  if (tab === 'Daily') {
+    // just today
+    dots.push({ date: todayUTC, label: todayUTC.getUTCDate(), isToday: true });
+  } else if (tab === 'Weekly') {
+    // all 7 days of this week (Sun–Sat)
+    const dow = now.getDay();
+    const sunUTC = new Date(todayUTC); sunUTC.setUTCDate(todayUTC.getUTCDate() - dow);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sunUTC); d.setUTCDate(sunUTC.getUTCDate() + i);
+      dots.push({ date: d, label: d.getUTCDate(), isToday: i === dow });
+    }
+  } else if (tab === 'Monthly') {
+    // all days of this month
+    const year = now.getFullYear(), month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayD = now.getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dt = new Date(Date.UTC(year, month, d));
+      dots.push({ date: dt, label: d, isToday: d === todayD });
+    }
+  } else {
+    // all 12 months of this year
+    const year = now.getFullYear();
+    const todayM = now.getMonth();
+    for (let m = 0; m < 12; m++) {
+      const dt = new Date(Date.UTC(year, m, 1));
+      dots.push({ date: dt, label: MONTH_SHORT[m], isToday: m === todayM, isMonth: true });
+    }
+  }
+  return dots;
+}
+
+// ── TaskProgressDots ───────────────────────────────────────
+function TaskProgressDots({ task, tab, onComplete, completedDatesOverride, compact = true }) {
+  const isRecurring = task.taskType === 'RECURRING';
+  const mongoId = task._id && /^[a-f\d]{24}$/i.test(task._id) ? task._id : null;
+
+  const [completedDates, setCompletedDates] = useState(new Set());
+  const [loading, setLoading] = useState(false);
+
+  const dots = buildDots(tab, compact);
+
+  useEffect(() => {
+    // if override provided (from CompletedPage), use it directly
+    if (completedDatesOverride) {
+      const set = new Set(completedDatesOverride.map(d => {
+        const dt = new Date(d);
+        return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+      }));
+      setCompletedDates(set);
+      return;
+    }
+    if (!isRecurring || !mongoId) {
+      if (!isRecurring && task.completed) {
+        const now = new Date();
+        const key = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        setCompletedDates(new Set([key]));
+      } else {
+        setCompletedDates(new Set());
+      }
+      return;
+    }
+    // fetch calendar logs for the months covered by dots
+    const months = [...new Set(dots.map(d => `${d.date.getUTCFullYear()}-${d.date.getUTCMonth()}`))]
+    setLoading(true);
+    Promise.all(
+      months.map(key => {
+        const [y, m] = key.split('-').map(Number);
+        return getCalendar(mongoId, y, m + 1);
+      })
+    ).then(results => {
+      const set = new Set();
+      results.forEach(r => {
+        (r.data.data || []).forEach(l => {
+          if (l.completed) {
+            const d = new Date(l.date);
+            set.add(`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`);
+          }
+        });
+      });
+      setCompletedDates(set);
+    }).catch(() => {}).finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task.id, task.completed, mongoId, tab, completedDatesOverride]);
+
+  const toKey = (dt) => `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+  const toMonthKey = (dt) => `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}`;
+
+  // for yearly tab: check if any completed date falls in that month
+  const isDotDone = (dot) => {
+    if (dot.isMonth) {
+      const mk = toMonthKey(dot.date);
+      return [...completedDates].some(k => k.startsWith(mk));
+    }
+    return completedDates.has(toKey(dot.date));
+  };
+
+  const handleDotClick = async (dot) => {
+    if (completedDatesOverride) return; // read-only in completed page
+    if (!isRecurring) {
+      if (dot.isToday) onComplete(task.id);
+      return;
+    }
+    if (!mongoId) return;
+    const key = toKey(dot.date);
+    const wasCompleted = completedDates.has(key);
+    // optimistic
+    setCompletedDates(prev => {
+      const next = new Set(prev);
+      wasCompleted ? next.delete(key) : next.add(key);
+      return next;
+    });
+    try {
+      await logComplete(mongoId, { date: key, completed: !wasCompleted });
+    } catch {
+      // revert
+      setCompletedDates(prev => {
+        const next = new Set(prev);
+        wasCompleted ? next.add(key) : next.delete(key);
+        return next;
+      });
+    }
+  };
+
+  return (
+    <div className={`td-progress-dots${!compact ? ' td-progress-dots--full' : ''}`}>
+      {dots.map((dot, i) => {
+        const done = isDotDone(dot);
+        const clickable = !completedDatesOverride && (isRecurring || dot.isToday);
+        return (
+          <button
+            key={i}
+            className={`td-prog-dot${done ? ' done' : ''}${dot.isToday ? ' today' : ''}${!clickable ? ' disabled' : ''}`}
+            onClick={() => clickable && handleDotClick(dot)}
+            disabled={!clickable}
+            title={dot.isMonth
+              ? dot.label
+              : dot.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', timeZone: 'UTC' })}
+          >
+            {dot.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── TaskCard ───────────────────────────────────────────────
-function TaskCard({ task, onComplete, onEdit, onDelete, onSelect, selected }) {
+function TaskCard({ task, tab, onComplete, onEdit, onDelete, onSelect, selected }) { // eslint-disable-line no-unused-vars
   const p = PRIORITY[task.priority] || PRIORITY.Medium;
   return (
     <div className="td-card-wrap">
       <div className={`td-card ${task.completed ? 'td-card--done' : ''} ${task.overdue && !task.completed ? 'td-card--overdue' : ''}`}>
-        <div className="td-card-left">
-          <button
-            className={`td-check ${task.completed ? 'td-check--done' : ''}`}
-            onClick={() => onComplete(task.id)}
-            title={task.completed ? 'Mark incomplete' : 'Mark complete'}
-          >
-            {task.completed && <Check size={11} />}
-          </button>
-        </div>
-
         <div className="td-card-body">
           <div className="td-card-top">
             <span className={`td-card-title ${task.completed ? 'td-card-title--done' : ''}`} style={{ cursor: 'pointer' }} onClick={() => onSelect(task)}>{task.title}</span>
@@ -324,6 +481,7 @@ function TaskCard({ task, onComplete, onEdit, onDelete, onSelect, selected }) {
               <span className="td-repeat-tag"><Repeat size={10} /> {task.repeat}</span>
             )}
           </div>
+          <TaskProgressDots task={task} tab={tab} onComplete={onComplete} />
           <div className="td-card-actions">
             <button className="td-detail-btn" onClick={() => onSelect(task)}>Task Detail</button>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
@@ -478,39 +636,77 @@ function DeletedPage({ onBack }) {
 // ── CompletedPage ──────────────────────────────────────────
 const COMPLETED_RANGES = ['Daily', 'Weekly', 'Monthly', 'Yearly'];
 
-function isInCompletedRange(task, range) {
-  const completedAt = new Date(task.updatedAt || task.dueDate);
-  if (isNaN(completedAt)) return range === 'Yearly';
+function isInCompletedRangeByDate(dateStr, range) {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return false;
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   if (range === 'Daily') {
     const endOfDay = new Date(startOfDay.getTime() + 86400000 - 1);
-    return completedAt >= startOfDay && completedAt <= endOfDay;
+    return d >= startOfDay && d <= endOfDay;
   }
   if (range === 'Weekly') {
     const startOfWeek = new Date(startOfDay.getTime() - now.getDay() * 86400000);
-    return completedAt >= startOfWeek;
+    return d >= startOfWeek;
   }
   if (range === 'Monthly') {
-    return completedAt.getMonth() === now.getMonth() && completedAt.getFullYear() === now.getFullYear();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   }
-  return completedAt.getFullYear() === now.getFullYear();
+  return d.getFullYear() === now.getFullYear();
 }
 
-function CompletedPage({ tasks, onBack, onSelect, onComplete, onDelete }) {
+function CompletedPage({ tasks, onBack, onDelete }) {
   const [range, setRange] = useState('Daily');
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [recurringLogs, setRecurringLogs] = useState([]); // [{ task, date }]
+  const [logsLoading, setLogsLoading] = useState(false);
 
-  const allCategories = [...new Set(tasks.map(t => t.category))];
+  const recurringTasks = tasks.filter(t => t.taskType === 'RECURRING' && t._id && /^[a-f\d]{24}$/i.test(t._id));
 
-  const filtered = tasks.filter(t =>
-    t.completed &&
-    isInCompletedRange(t, range) &&
-    (filterPriority === 'all' || t.priority === filterPriority) &&
-    (filterCategory === 'all' || t.category === filterCategory)
-  );
+  // fetch logs for all recurring tasks for the current year (covers all ranges)
+  useEffect(() => {
+    if (!recurringTasks.length) { setRecurringLogs([]); return; }
+    setLogsLoading(true);
+    const now = new Date();
+    const year = now.getFullYear();
+    const months = Array.from({ length: now.getMonth() + 1 }, (_, i) => i + 1);
+    Promise.all(
+      recurringTasks.flatMap(task =>
+        months.map(m => getCalendar(task._id, year, m).then(r => ({ task, logs: r.data.data || [] })))
+      )
+    ).then(results => {
+      const entries = [];
+      results.forEach(({ task, logs }) => {
+        logs.filter(l => l.completed).forEach(l => {
+          entries.push({ task, date: l.date });
+        });
+      });
+      setRecurringLogs(entries);
+    }).catch(() => {}).finally(() => setLogsLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks.length]);
+
+  // ONE_TIME completed entries
+  const oneTimeEntries = tasks
+    .filter(t => t.taskType !== 'RECURRING' && t.completed)
+    .map(t => ({ task: t, date: t.updatedAt || t.dueDate || new Date().toISOString() }));
+
+  const allEntries = [...oneTimeEntries, ...recurringLogs];
+
+  const allCategories = [...new Set(allEntries.map(e => e.task.category))];
+
+  // deduplicate: one card per task in the range (dots show all days)
+  const seenIds = new Set();
+  const filtered = allEntries.filter(e => {
+    if (!isInCompletedRangeByDate(e.date, range)) return false;
+    if (!(filterPriority === 'all' || e.task.priority === filterPriority)) return false;
+    if (!(filterCategory === 'all' || e.task.category === filterCategory)) return false;
+    if (seenIds.has(e.task._id || e.task.id)) return false;
+    seenIds.add(e.task._id || e.task.id);
+    return true;
+  });
 
   return (
     <div className="td-page">
@@ -520,7 +716,7 @@ function CompletedPage({ tasks, onBack, onSelect, onComplete, onDelete }) {
           <CheckSquare size={20} color={C.violet} />
           <h1 className="td-page-title">Completed Tasks</h1>
         </div>
-        <span className="td-summary-num" style={{ color: C.sky, marginLeft: 'auto' }}>{filtered.length}</span>
+
       </div>
 
       <div className="td-tabs">
@@ -551,16 +747,40 @@ function CompletedPage({ tasks, onBack, onSelect, onComplete, onDelete }) {
       )}
 
       <div className="td-body">
-        {filtered.length === 0 ? (
+        {logsLoading ? (
+          <div className="td-empty"><p>Loading…</p></div>
+        ) : filtered.length === 0 ? (
           <div className="td-empty">
             <CheckSquare size={32} strokeWidth={1.2} />
             <p>No completed tasks for this period</p>
           </div>
         ) : (
           <div className="td-list">
-            {filtered.map(t => (
-              <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={() => {}} onDelete={onDelete} onSelect={onSelect} selected={false} />
-            ))}
+            {filtered.map((e, i) => {
+              const p = PRIORITY[e.task.priority] || PRIORITY.Medium;
+              return (
+                <div key={`${e.task._id}-${e.date}-${i}`} className="td-card td-card--done">
+                  <div className="td-card-body">
+                    <div className="td-card-top">
+                      <span className="td-card-title td-card-title--done">{e.task.title}</span>
+                    </div>
+                    <div className="td-card-meta">
+                      <span className="td-priority-tag" style={{ background: `${p.color}18`, color: p.color }}>
+                        <Flag size={10} /> {e.task.priority}
+                      </span>
+                      <span className="td-cat-tag"><Tag size={10} /> {e.task.category}</span>
+                      <span className="td-date-tag" style={{ background: 'rgba(68,194,253,0.08)', color: C.sky }}>
+                        <Check size={10} /> {fmtDate(e.date)}
+                      </span>
+                      {e.task.repeat && e.task.repeat !== 'none' && (
+                        <span className="td-repeat-tag"><Repeat size={10} /> {e.task.repeat}</span>
+                      )}
+                    </div>
+                    <TaskProgressDots task={e.task} tab={range} onComplete={() => {}} compact={false} completedDatesOverride={recurringLogs.filter(l => l.task._id === e.task._id).map(l => l.date)} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -569,7 +789,7 @@ function CompletedPage({ tasks, onBack, onSelect, onComplete, onDelete }) {
 }
 
 // ── TaskList ───────────────────────────────────────────────
-function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEdit, onDelete, onSelect, selectedId }) {
+function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEdit, onDelete, onSelect, selectedId }) { // eslint-disable-line no-unused-vars
   const [showCompleted, setShowCompleted] = useState(false);
   const [allDone, setAllDone] = useState(false);
 
@@ -616,7 +836,7 @@ function TaskList({ tasks, tab, filterPriority, filterCategory, onComplete, onEd
   }
 
   const renderCard = (t) => (
-    <TaskCard key={t.id} task={t} onComplete={onComplete} onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} selected={selectedId === t.id} />
+    <TaskCard key={t.id} task={t} tab={tab} onComplete={onComplete} onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} selected={selectedId === t.id} />
   );
 
   return (
@@ -799,8 +1019,6 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
         <CompletedPage
           tasks={tasks}
           onBack={() => setShowCompleted(false)}
-          onSelect={selectTask}
-          onComplete={completeTask}
           onDelete={deleteTask}
         />
       )}
@@ -823,9 +1041,6 @@ export default function TodoPage({ tab: initialTab = 'Daily' }) {
             <button className="td-add-btn" onClick={openAdd}>Add Task</button>
             <button className="td-completed-btn" onClick={() => setShowCompleted(true)}>
               Completed
-              {tasks.filter(t => t.completed).length > 0 && (
-                <span className="td-completed-btn-count">{tasks.filter(t => t.completed).length}</span>
-              )}
             </button>
             <button className="td-trash-btn" onClick={() => setShowDeleted(true)}>Trash</button>
           </div>

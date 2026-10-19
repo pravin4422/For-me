@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Bell } from 'lucide-react';
-import { useNotifications } from './hooks/useNotifications';
+import { useNotificationContext } from './context/NotificationContext';
 import NotificationDrawer from './NotificationDrawer';
 import './NotificationBell.css';
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const notif = useNotifications({ limit: 50 });
+  const notif = useNotificationContext();
 
   return (
     <>

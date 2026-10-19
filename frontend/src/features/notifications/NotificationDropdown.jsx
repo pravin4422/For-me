@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { CheckCheck } from 'lucide-react';
-import { useNotifications } from './hooks/useNotifications';
+import { useNotificationContext } from './context/NotificationContext';
 import NotificationItem from './components/NotificationItem';
 import EmptyNotifications from './components/EmptyNotifications';
 import './NotificationDropdown.css';
 
 export default function NotificationDropdown({ onClose }) {
-  const { notifications, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications({ limit: 8 });
+  const { notifications, loading, markAsRead, markAllAsRead, deleteNotification } = useNotificationContext();
 
   return (
     <div className="notif-dropdown">
