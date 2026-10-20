@@ -10,7 +10,7 @@ export default function BudgetEntryForm({ fields, onAdd, accentColor = '#5f59f7'
 
   const submit = (e) => {
     e.preventDefault();
-    const required = fields.filter(f => f.required !== false && f.type !== 'file');
+    const required = fields.filter(f => f.required === true);
     if (required.some(f => !form[f.key])) return;
     onAdd({ ...form, id: Date.now() });
     setForm(init);

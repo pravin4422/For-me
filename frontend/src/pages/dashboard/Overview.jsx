@@ -11,18 +11,13 @@ import {
 import DashboardCard from '../../components/cards/DashboardCard';
 import { getTodos } from '../../api/todo/index.js';
 import * as plannerApi from '../../api/study/plannerApi';
+import { getIncomes } from '../../api/budget/incomeApi';
+import { getExpenses } from '../../api/budget/expenseApi';
 import './Overview.css';
 
 const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-const BUDGET_DATA = [
-  { name: 'Jan', income: 32000, spend: 21000 },
-  { name: 'Feb', income: 32000, spend: 18500 },
-  { name: 'Mar', income: 35000, spend: 24000 },
-  { name: 'Apr', income: 32000, spend: 19000 },
-  { name: 'May', income: 38000, spend: 22000 },
-  { name: 'Jun', income: 32000, spend: 15000 },
-];
+
 
 const TIME_DATA = [
   { name: 'Study', value: 4, color: '#6366f1' },
@@ -95,6 +90,37 @@ export default function Overview() {
     getTodos()
       .then(r => setTasks(r.data.data.map(t => ({ ...t, id: t._id }))))
       .catch(() => {});
+  }, []);
+
+  const [budgetData, setBudgetData] = useState([]);
+  const [budgetBalance, setBudgetBalance] = useState(null);
+  useEffect(() => {
+    Promise.all([getIncomes(), getExpenses()]).then(([incRes, expRes]) => {
+      const incomes  = incRes.data.data  || [];
+      const expenses = expRes.data.data  || [];
+      const monthMap = {};
+      incomes.forEach(({ date, amount }) => {
+        const d = new Date(date);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        if (!monthMap[key]) monthMap[key] = { year: d.getFullYear(), month: d.getMonth(), income: 0, spend: 0 };
+        monthMap[key].income += Number(amount) || 0;
+      });
+      expenses.forEach(({ date, amount }) => {
+        const d = new Date(date);
+        const key = `${d.getFullYear()}-${d.getMonth()}`;
+        if (!monthMap[key]) monthMap[key] = { year: d.getFullYear(), month: d.getMonth(), income: 0, spend: 0 };
+        monthMap[key].spend += Number(amount) || 0;
+      });
+      const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const sorted = Object.values(monthMap)
+        .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
+        .slice(-6)
+        .map(m => ({ name: MONTH_NAMES[m.month], income: m.income, spend: m.spend }));
+      setBudgetData(sorted);
+      const totalIncome  = incomes.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+      const totalExpense = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      setBudgetBalance(totalIncome - totalExpense);
+    }).catch(() => {});
   }, []);
 
   const [studyProgress, setStudyProgress] = useState([]);
@@ -221,9 +247,9 @@ export default function Overview() {
 
       {/* 7. Budget Summary */}
       <DashboardCard title="Budget Summary" icon={<Wallet size={16} />} viewAllLink="/dashboard/budget/reports">
-        <div className="budget-balance">Available: <strong>₹17,000</strong></div>
+        <div className="budget-balance">Available: <strong>{budgetBalance !== null ? `₹${budgetBalance.toLocaleString('en-IN')}` : '—'}</strong></div>
         <ResponsiveContainer width="100%" height={90}>
-          <BarChart data={BUDGET_DATA} barSize={8}>
+          <BarChart data={budgetData} barSize={8}>
             <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
             <Tooltip contentStyle={{ fontSize: 12 }} />
             <Bar dataKey="income" fill="#10b981" radius={4} />

@@ -6,7 +6,7 @@ const savingSchema = new mongoose.Schema(
     userEmail: { type: String, required: true, index: true },
     goal:      { type: String, required: true, trim: true },
     category:  { type: String, required: true },
-    amount:    { type: Number, required: true },
+    amount:    { type: Number, required: true, min: [0, 'Amount must be non-negative'] },
     date:      { type: String, default: '' },
     notes:     { type: String, default: '' },
     document:  { type: String, default: '' },

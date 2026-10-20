@@ -131,9 +131,10 @@ const NAV = [
     items: [
       {
         label: 'Time Balancer', icon: <Clock size={18} />, path: '/dashboard/time', children: [
-          { label: 'Daily',   path: '/dashboard/time/daily' },
-          { label: 'Weekly',  path: '/dashboard/time/weekly' },
-          { label: 'Monthly', path: '/dashboard/time/monthly' },
+          { label: 'Daily',      path: '/dashboard/time/daily' },
+          { label: 'Weekly',     path: '/dashboard/time/weekly' },
+          { label: 'Monthly',    path: '/dashboard/time/monthly' },
+          { label: 'Promo Todo', path: '/dashboard/time/promotodo' },
         ]
       },
       {
@@ -146,13 +147,14 @@ const NAV = [
         ]
       },
       {
-        label: 'Budget', icon: <Wallet size={18} />, path: '/dashboard/budget/income', children: [
-          { label: 'Income',      path: '/dashboard/budget/income' },
-          { label: 'Expenses',    path: '/dashboard/budget/expenses' },
-          { label: 'Investments', path: '/dashboard/budget/investments' },
-          { label: 'Savings',     path: '/dashboard/budget/savings' },
-          { label: 'Documents',   path: '/dashboard/budget/documents' },
-          { label: 'Reports',     path: '/dashboard/budget/reports' },
+        label: 'Budget', icon: <Wallet size={18} />, path: '/dashboard/budget/planner', children: [
+          { label: 'Budget Planner', path: '/dashboard/budget/planner' },
+          { label: 'Income',         path: '/dashboard/budget/income' },
+          { label: 'Expenses',       path: '/dashboard/budget/expenses' },
+          { label: 'Investments',    path: '/dashboard/budget/investments' },
+          { label: 'Savings',        path: '/dashboard/budget/savings' },
+          { label: 'Documents',      path: '/dashboard/budget/documents' },
+          { label: 'Reports',        path: '/dashboard/budget/reports' },
         ]
       },
       {

@@ -10,7 +10,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Overview from './pages/dashboard/Overview';
 import {
-  Income, Expenses, Investments, Savings, BudgetDocs, BudgetReports
+  Income, Expenses, Investments, Savings, BudgetDocs, BudgetReports, BudgetPlanner, BudgetPlannerPage
 } from './pages/budget/BudgetPages';
 import ShoppingPlanner from './pages/shopping/ShoppingPlanner';
 import HealthPage     from './pages/health/HealthPage';
@@ -25,6 +25,7 @@ import ConditionsPage from './pages/health/ConditionsPage';
 import MotivationPage    from './pages/motivation/MotivationPage';
 import DocumentPage      from './pages/document/DocumentPage';
 import TimeBalancerPage  from './pages/time/TimeBalancerPage';
+import PromoTodo         from './pages/time/PromoTodo';
 import TodoPage          from './pages/todo/TodoPage';
 import CategoryDashboard      from './features/exams/CategoryDashboard';
 import ExamDashboard          from './features/exams/ExamDashboard';
@@ -126,7 +127,8 @@ function DashboardApp() {
     <DashboardLayout onLogout={handleLogout}>
       <Routes>
         <Route index                     element={<Overview />} />
-        <Route path="budget"             element={<Income />} />
+        <Route path="budget"             element={<BudgetPlanner />} />
+        <Route path="budget/planner"     element={<BudgetPlannerPage />} />
         <Route path="budget/income"      element={<Income />} />
         <Route path="budget/expenses"    element={<Expenses />} />
         <Route path="budget/investments" element={<Investments />} />
@@ -161,7 +163,8 @@ function DashboardApp() {
         <Route path="time"         element={<TimeBalancerPage />} />
         <Route path="time/daily"   element={<TimeBalancerPage tab="daily" />} />
         <Route path="time/weekly"  element={<TimeBalancerPage tab="weekly" />} />
-        <Route path="time/monthly" element={<TimeBalancerPage tab="monthly" />} />
+        <Route path="time/monthly"   element={<TimeBalancerPage tab="monthly" />} />
+        <Route path="time/promotodo" element={<PromoTodo />} />
         <Route path="motivation"                    element={<MotivationPage />} />
         <Route path="motivation/quotes"             element={<MotivationPage tab="quotes" />} />
         <Route path="motivation/images"             element={<MotivationPage tab="images" />} />

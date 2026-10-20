@@ -442,32 +442,48 @@
 }
 
 /* ── documents ───────────────────────────────────────────── */
-.bgt-doc-upload {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-  padding: 12px;
+.bgt-doc-form {
   background: rgba(95,89,247,0.05);
   border: 1px solid rgba(95,89,247,0.15);
   border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.bgt-doc-upload input,
-.bgt-doc-upload select {
-  padding: 7px 10px;
+.bgt-doc-mode-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.bgt-doc-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
   border: 1px solid var(--border);
   border-radius: 7px;
-  background: var(--bg-main);
-  color: var(--text-body);
-  font-size: 13px;
-  outline: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.bgt-doc-upload input:focus { border-color: var(--bgt-violet); }
-.bgt-doc-upload input:first-of-type { flex: 1; min-width: 140px; }
-.bgt-doc-upload input:nth-of-type(2) { flex: 2; min-width: 180px; }
+.bgt-doc-mode-btn.active {
+  background: rgba(95,89,247,0.12);
+  color: var(--bgt-violet);
+  border-color: var(--bgt-violet);
+}
+
+.bgt-doc-form-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
 
 .bgt-doc-list {
   display: flex;
@@ -524,6 +540,10 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 18px 16px;
+}
+
+.bgt-chart-card-full {
+  grid-column: 1 / -1;
 }
 
 .bgt-chart-card h4 {

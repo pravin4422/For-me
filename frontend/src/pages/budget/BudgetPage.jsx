@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, PiggyBank, BarChart3,
   FileText, Landmark, Wallet, Link2, Trash2, FileSpreadsheet,
-  Image, FileBadge, IndianRupee
+  Image, FileBadge, IndianRupee, Upload, Paperclip, Plus, X
 } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, AreaChart, Area,
@@ -11,6 +11,8 @@ import {
 } from 'recharts';
 import BudgetEntryForm from './BudgetEntryForm';
 import BudgetEntryList from './BudgetEntryList';
+import BudgetPlanner from './BudgetPlanner';
+import { getAllBudgetPlans } from '../../api/budget/budgetPlanApi';
 import { getIncomes, createIncome, updateIncome, deleteIncome } from '../../api/budget/incomeApi';
 import { getExpenses, createExpense, updateExpense, deleteExpense } from '../../api/budget/expenseApi';
 import { getInvestments, createInvestment, updateInvestment, deleteInvestment } from '../../api/budget/investmentApi';
@@ -68,35 +70,6 @@ const SAVINGS_FIELDS = [
   { key: 'document', label: 'Document',     type: 'file',     required: false },
 ];
 
-// ── mock data ─────────────────────────────────────────────
-const MOCK_DOCS = [
-  { id: 1, name: 'July Bank Statement.pdf',   type: 'pdf',   link: '#' },
-  { id: 2, name: 'Investment Proof Q1.xlsx',  type: 'excel', link: '#' },
-  { id: 3, name: 'Salary Slip July.pdf',      type: 'pdf',   link: '#' },
-];
-
-const MONTHLY_DATA = [
-  { month: 'Feb', income: 52000, expenses: 22000, savings: 12000, investments: 8000 },
-  { month: 'Mar', income: 55000, expenses: 24000, savings: 14000, investments: 10000 },
-  { month: 'Apr', income: 50000, expenses: 21000, savings: 11000, investments: 9000 },
-  { month: 'May', income: 58000, expenses: 26000, savings: 15000, investments: 12000 },
-  { month: 'Jun', income: 54000, expenses: 23000, savings: 13000, investments: 11000 },
-  { month: 'Jul', income: 60200, expenses: 23600, savings: 20000, investments: 23000 },
-];
-
-const YEARLY_DATA = Array.from({ length: 12 }, (_, i) => ({
-  month: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
-  income:      40000 + Math.round(Math.random() * 20000),
-  expenses:    18000 + Math.round(Math.random() * 10000),
-  savings:     8000  + Math.round(Math.random() * 8000),
-  investments: 5000  + Math.round(Math.random() * 10000),
-}));
-
-const BALANCE_TREND = MONTHLY_DATA.map(d => ({
-  month: d.month,
-  balance: d.income - d.expenses,
-}));
-
 // ── helpers ───────────────────────────────────────────────
 const sum = (arr, key) => arr.reduce((a, b) => a + (parseFloat(b[key]) || 0), 0);
 const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
@@ -120,19 +93,182 @@ const monthDiff = (e, now) => {
   return (now.getFullYear() - p.year) * 12 + (now.getMonth() - p.month);
 };
 
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildChartData(income, expenses, savings, investments, months) {
+  const now = new Date();
+  return Array.from({ length: months }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1);
+    const y = d.getFullYear(), m = d.getMonth();
+    const fil = (arr) => arr.filter(e => inMonth(e, y, m));
+    const inc = sum(fil(income),      'amount');
+    const exp = sum(fil(expenses),    'amount');
+    const sav = sum(fil(savings),     'amount');
+    const inv = sum(fil(investments), 'amount');
+    return { month: MONTH_SHORT[m], income: inc, expenses: exp, savings: sav, investments: inv, balance: inc - exp };
+  });
+}
+
 const DOC_ICONS = {
   pdf:   <FileBadge size={16} color={C.violet} />,
   excel: <FileSpreadsheet size={16} color={C.sky} />,
   image: <Image size={16} color={C.purple} />,
 };
 
+// ── document upload form ─────────────────────────────────
+const INIT_DOC = { name: '', link: '', type: 'pdf', file: null, mode: 'url' };
+
+function DocUploadForm({ docs, setDocs, accentColor }) {
+  const [form, setForm] = useState(INIT_DOC);
+  const [open, setOpen] = useState(false);
+  const fileRef = useRef();
+
+  const handle = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const add = async () => {
+    if (!form.name) return;
+    let link = form.link || '#';
+    let type = form.type;
+    if (form.mode === 'file' && form.file) {
+      link = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(form.file);
+      });
+      const ext = form.file.name.split('.').pop().toLowerCase();
+      type = ['jpg','jpeg','png','gif','webp'].includes(ext) ? 'image'
+           : ['xls','xlsx','csv'].includes(ext) ? 'excel'
+           : 'pdf';
+    }
+    setDocs(p => [{ id: Date.now(), name: form.name, link, type }, ...p]);
+    setForm(INIT_DOC);
+    setOpen(false);
+  };
+
+  return (
+    <>
+      {!open ? (
+        <button className="bgt-add-btn" style={{ background: accentColor }} onClick={() => setOpen(true)}>
+          <Plus size={15} /> Add Document
+        </button>
+      ) : (
+        <div className="bgt-doc-form">
+          <div className="bgt-doc-mode-toggle">
+            <button
+              className={`bgt-doc-mode-btn ${form.mode === 'url' ? 'active' : ''}`}
+              onClick={() => handle('mode', 'url')}
+            ><Link2 size={13} /> URL / Link</button>
+            <button
+              className={`bgt-doc-mode-btn ${form.mode === 'file' ? 'active' : ''}`}
+              onClick={() => handle('mode', 'file')}
+            ><Upload size={13} /> Upload File</button>
+          </div>
+
+          <div className="bgt-doc-form-fields">
+            <div className="bgt-field">
+              <label>Document Name</label>
+              <input
+                value={form.name}
+                onChange={e => handle('name', e.target.value)}
+                placeholder="e.g. July Bank Statement"
+              />
+            </div>
+
+            {form.mode === 'url' ? (
+              <>
+                <div className="bgt-field">
+                  <label>URL / Link</label>
+                  <input
+                    value={form.link}
+                    onChange={e => handle('link', e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div className="bgt-field">
+                  <label>Type</label>
+                  <select value={form.type} onChange={e => handle('type', e.target.value)}>
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel / CSV</option>
+                    <option value="image">Image</option>
+                  </select>
+                </div>
+              </>
+            ) : (
+              <div className="bgt-field bgt-field-full">
+                <label>File</label>
+                <div className="bgt-file-input">
+                  <label className="bgt-file-label" style={{ borderColor: accentColor }}>
+                    <Paperclip size={14} />
+                    <span>{form.file ? form.file.name : 'Click to choose a file'}</span>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.csv,.doc,.docx"
+                      onChange={e => {
+                        const f = e.target.files[0] || null;
+                        handle('file', f);
+                        if (f && !form.name) handle('name', f.name.replace(/\.[^.]+$/, ''));
+                      }}
+                    />
+                  </label>
+                  {form.file && (
+                    <button type="button" className="bgt-icon-btn red" onClick={() => { handle('file', null); fileRef.current.value = ''; }}>
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bgt-form-actions">
+            <button className="bgt-btn-primary" style={{ background: accentColor }} onClick={add}>
+              <Plus size={14} /> Add
+            </button>
+            <button className="bgt-btn-ghost" onClick={() => { setOpen(false); setForm(INIT_DOC); }}>
+              <X size={14} /> Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {docs.length === 0 ? (
+        <div className="bgt-empty"><span>No documents yet — add your first one</span></div>
+      ) : (
+        <div className="bgt-doc-list">
+          {docs.map(d => (
+            <div key={d.id} className="bgt-doc-row">
+              <span className="bgt-doc-icon">{DOC_ICONS[d.type] || <FileText size={16} />}</span>
+              <span className="bgt-doc-name">{d.name}</span>
+              <a
+                href={d.link}
+                className="bgt-doc-link"
+                target="_blank"
+                rel="noreferrer"
+                download={d.link?.startsWith('data:') ? d.name : undefined}
+              >
+                <Link2 size={13} /> {d.link?.startsWith('data:') ? 'Download' : 'Open'}
+              </a>
+              <button className="bgt-icon-btn red" onClick={() => setDocs(p => p.filter(x => x.id !== d.id))}>
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 const TABS = [
-  { key: 'income',      label: 'Income',      icon: <TrendingUp size={15} /> },
-  { key: 'expenses',    label: 'Expenses',    icon: <TrendingDown size={15} /> },
-  { key: 'investments', label: 'Investments', icon: <Landmark size={15} /> },
-  { key: 'savings',     label: 'Savings',     icon: <PiggyBank size={15} /> },
-  { key: 'documents',   label: 'Documents',   icon: <FileText size={15} /> },
-  { key: 'reports',     label: 'Reports',     icon: <BarChart3 size={15} /> },
+  { key: 'planner',     label: 'Budget Planner', icon: <Wallet size={15} /> },
+  { key: 'income',      label: 'Income',         icon: <TrendingUp size={15} /> },
+  { key: 'expenses',    label: 'Expenses',       icon: <TrendingDown size={15} /> },
+  { key: 'investments', label: 'Investments',    icon: <Landmark size={15} /> },
+  { key: 'savings',     label: 'Savings',        icon: <PiggyBank size={15} /> },
+  { key: 'documents',   label: 'Documents',      icon: <FileText size={15} /> },
+  { key: 'reports',     label: 'Reports',        icon: <BarChart3 size={15} /> },
 ];
 
 // ── income stats ─────────────────────────────────────────
@@ -327,7 +463,7 @@ const PATH_TAB = {
   'savings': 'savings', 'documents': 'documents', 'reports': 'reports',
 };
 
-export default function BudgetPage({ initialTab = 'income' }) {
+export default function BudgetPage({ initialTab = 'planner' }) {
   const location = useLocation();
   const segmentTab = PATH_TAB[location.pathname.split('/').pop()] || initialTab;
   const [tab, setTab] = useState(segmentTab);
@@ -344,7 +480,8 @@ export default function BudgetPage({ initialTab = 'income' }) {
   const [investmentLoading, setInvestmentLoading] = useState(false);
   const [savings,       setSavings]       = useState([]);
   const [savingLoading, setSavingLoading] = useState(false);
-  const [docs,          setDocs]          = useState(MOCK_DOCS);
+  const [docs,          setDocs]          = useState([]);
+  const [plannerChartData, setPlannerChartData] = useState([]);
 
   const totalIncome  = sum(income, 'amount');
   const totalExpense = sum(expenses, 'amount');
@@ -400,7 +537,21 @@ export default function BudgetPage({ initialTab = 'income' }) {
     }
   }, []);
 
-  useEffect(() => { fetchIncome(); fetchExpenses(); fetchInvestments(); fetchSavings(); }, [fetchIncome, fetchExpenses, fetchInvestments, fetchSavings]);
+  const fetchPlannerChart = useCallback(async () => {
+    try {
+      const { data } = await getAllBudgetPlans();
+      const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      setPlannerChartData(
+        [...data].reverse().map(p => ({
+          month: `${MONTH_SHORT[p.month]} ${p.year}`,
+          planned: p.total,
+          limit:   p.budgetLimit || 0,
+        }))
+      );
+    } catch (e) { console.error(e); }
+  }, []);
+
+  useEffect(() => { fetchIncome(); fetchExpenses(); fetchInvestments(); fetchSavings(); fetchPlannerChart(); }, [fetchIncome, fetchExpenses, fetchInvestments, fetchSavings, fetchPlannerChart]);
 
   const handleAddIncome = async (entry) => {
     try {
@@ -513,6 +664,10 @@ export default function BudgetPage({ initialTab = 'income' }) {
     } catch (e) { console.error(e); }
   };
 
+  const monthlyData  = buildChartData(income, expenses, savings, investments, 6);
+  const yearlyData   = buildChartData(income, expenses, savings, investments, 12);
+  const balanceTrend = monthlyData.map(({ month, balance }) => ({ month, balance }));
+
   // expense category breakdown
   const catMap = expenses.reduce((acc, e) => {
     acc[e.category] = (acc[e.category] || 0) + parseFloat(e.amount);
@@ -621,41 +776,13 @@ export default function BudgetPage({ initialTab = 'income' }) {
           </>
         )}
 
+        {tab === 'planner' && (
+          <BudgetPlanner onSave={fetchPlannerChart} />
+        )}
+
         {tab === 'documents' && (
           <Section title="Budget Documents" icon={<FileText size={16} />}>
-            <div className="bgt-doc-upload">
-              <Link2 size={14} />
-              <input placeholder="File name" id="doc-name" />
-              <input placeholder="Link / URL" id="doc-link" />
-              <select id="doc-type">
-                <option value="pdf">PDF</option>
-                <option value="excel">Excel</option>
-                <option value="image">Image</option>
-              </select>
-              <button className="bgt-btn-primary" style={{ background: C.violet }} onClick={() => {
-                const name = document.getElementById('doc-name').value;
-                const link = document.getElementById('doc-link').value;
-                const type = document.getElementById('doc-type').value;
-                if (!name) return;
-                setDocs(p => [{ id: Date.now(), name, link: link || '#', type }, ...p]);
-                document.getElementById('doc-name').value = '';
-                document.getElementById('doc-link').value = '';
-              }}>Add</button>
-            </div>
-            {docs.length === 0 ? (
-              <div className="bgt-empty"><span>No documents yet — add your first one</span></div>
-            ) : (
-              <div className="bgt-doc-list">
-                {docs.map(d => (
-                  <div key={d.id} className="bgt-doc-row">
-                    <span className="bgt-doc-icon">{DOC_ICONS[d.type] || <FileText size={16} />}</span>
-                    <span className="bgt-doc-name">{d.name}</span>
-                    <a href={d.link} className="bgt-doc-link" target="_blank" rel="noreferrer"><Link2 size={13} /> Open</a>
-                    <button className="bgt-icon-btn red" onClick={() => setDocs(p => p.filter(x => x.id !== d.id))}><Trash2 size={14} /></button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <DocUploadForm docs={docs} setDocs={setDocs} accentColor={C.violet} />
           </Section>
         )}
 
@@ -666,7 +793,7 @@ export default function BudgetPage({ initialTab = 'income' }) {
               <div className="bgt-chart-card">
                 <h4>Monthly Summary</h4>
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={MONTHLY_DATA} barSize={10}>
+                  <BarChart data={monthlyData} barSize={10}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
                     <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#aaa' }} />
                     <YAxis tick={{ fontSize: 11, fill: '#aaa' }} tickFormatter={v => `₹${v/1000}k`} />
@@ -684,7 +811,7 @@ export default function BudgetPage({ initialTab = 'income' }) {
               <div className="bgt-chart-card">
                 <h4>Yearly Overview</h4>
                 <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={YEARLY_DATA}>
+                  <AreaChart data={yearlyData}>
                     <defs>
                       {[['inc', C.sky], ['exp', C.violet], ['sav', C.purple], ['inv', C.blue]].map(([id, color]) => (
                         <linearGradient key={id} id={`g-${id}`} x1="0" y1="0" x2="0" y2="1">
@@ -710,7 +837,7 @@ export default function BudgetPage({ initialTab = 'income' }) {
               <div className="bgt-chart-card">
                 <h4>Available Balance Trend</h4>
                 <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={BALANCE_TREND}>
+                  <LineChart data={balanceTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
                     <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#aaa' }} />
                     <YAxis tick={{ fontSize: 11, fill: '#aaa' }} tickFormatter={v => `₹${v/1000}k`} />
@@ -718,6 +845,26 @@ export default function BudgetPage({ initialTab = 'income' }) {
                     <Line type="monotone" dataKey="balance" stroke={C.sky} strokeWidth={2.5} dot={{ fill: C.sky, r: 4 }} name="Balance" />
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+
+              {/* Budget Planner chart */}
+              <div className="bgt-chart-card bgt-chart-card-full">
+                <h4><Wallet size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />Budget Planner — Planned vs Limit</h4>
+                {plannerChartData.length === 0 ? (
+                  <div className="bgt-empty" style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No planner data saved yet</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={plannerChartData} barSize={14}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#aaa' }} />
+                      <YAxis tick={{ fontSize: 11, fill: '#aaa' }} tickFormatter={v => `₹${v/1000}k`} />
+                      <Tooltip formatter={(v) => fmt(v)} contentStyle={{ background: '#1e1b4b', border: 'none', borderRadius: 8, fontSize: 12 }} />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Bar dataKey="planned" fill={C.violet} name="Planned Total" radius={[4,4,0,0]} />
+                      <Bar dataKey="limit"   fill={C.sky}    name="Budget Limit" radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
 
               {/* Category breakdown */}

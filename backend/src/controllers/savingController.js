@@ -23,9 +23,10 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
+    const { goal, category, amount, date, notes, document } = req.body;
     const item = await Saving.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.uid },
-      req.body,
+      { goal, category, amount, date, notes, document },
       { new: true, runValidators: true }
     );
     if (!item) return next(new AppError('Not found', 404));
