@@ -11,6 +11,7 @@ const savingRoutes        = require('./savingRoutes');
 const budgetPlanRoutes    = require('./budgetPlanRoutes');
 const timeActivityRoutes  = require('./timeActivityRoutes');
 const promoSessionRoutes  = require('./promoSessionRoutes');
+const timeLogRoutes       = require('./timeLogRoutes');
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use('/savings',       savingRoutes);
 router.use('/budget-plan',      budgetPlanRoutes);
 router.use('/time-activities',  timeActivityRoutes);
 router.use('/promo-sessions',   promoSessionRoutes);
+router.use('/time-logs',        timeLogRoutes);
 
 module.exports = router;

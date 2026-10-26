@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Timer, Play, Pause, RotateCcw, CheckCircle2, Trash2,
   BookOpen, Briefcase, Moon, Dumbbell, Car, MoreHorizontal,
   Clock, TrendingUp, LayoutGrid, CalendarDays, ListChecks, Settings,
-  Coffee,
+  Coffee, Minimize2, Maximize2,
 } from 'lucide-react';
 import './PromoTodo.css';
 import { getTimeActivities } from '../../api/time/timeActivityApi';
@@ -57,12 +57,13 @@ const fmtDur = (secs) => {
 
 function ViewNav() {
   const navigate = useNavigate();
+  const location = useLocation();
   const views = [
     { key: 'overview',  label: 'Overview',   path: '/dashboard/time',           icon: <LayoutGrid size={13} /> },
+    { key: 'promotodo', label: 'Promo Todo', path: '/dashboard/time/promotodo', icon: <Timer size={13} /> },
     { key: 'daily',     label: 'Daily',      path: '/dashboard/time/daily',     icon: <CalendarDays size={13} /> },
     { key: 'weekly',    label: 'Weekly',     path: '/dashboard/time/weekly',    icon: <TrendingUp size={13} /> },
     { key: 'monthly',   label: 'Monthly',    path: '/dashboard/time/monthly',   icon: <Clock size={13} /> },
-    { key: 'promotodo', label: 'Promo Todo', path: '/dashboard/time/promotodo', icon: <Timer size={13} /> },
   ];
   return (
     <div className="tb-viewnav">
@@ -113,21 +114,20 @@ export default function PromoTodo() {
 
   useEffect(() => {
     getTimeActivities()
-      .then(r => setTodayActs(r.data.data.map(a => ({ ...a, id: a._id })).filter(isScheduledToday)))
+      .then(r => setTodayActs(r.data.data.map(a => ({ ...a, id: String(a._id) })).filter(isScheduledToday)))
       .catch(() => {});
     getPromoSessions()
       .then(r => {
         const all = r.data.data.map(s => ({
           ...s,
-          id: s._id,
+          id: String(s._id),
           date: new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
         }));
-        // separate progress records (seconds===0, remainingSecs!=null) from real logs
         const progress = {};
         const logs = [];
         all.forEach(s => {
           if (s.remainingSecs !== null && s.remainingSecs !== undefined && s.seconds === 0) {
-            progress[s.actId] = s.remainingSecs;
+            progress[String(s.actId)] = s.remainingSecs;
           } else {
             logs.push(s);
           }
@@ -164,8 +164,10 @@ export default function PromoTodo() {
 
   const handleSelectActivity = (act) => {
     if (running || (timerSecs > 0 && !finished)) return;
-    setSelectedAct(act);
+    setSelectedAct({ ...act, id: String(act.id) });
   };
+
+  const [fullscreen, setFullscreen] = useState(false);
 
   const handleStart = () => {
     if (!selectedAct) return;
@@ -179,19 +181,18 @@ export default function PromoTodo() {
     setStudyElapsed(0);
     setCurrentSession(1);
     setPhase('study');
+    setFullscreen(true);
 
     if (pomodoroMode) {
-      // check if there's saved remaining for this activity
-      const savedRemaining = actProgress[selectedAct.id];
+      const savedRemaining = actProgress[String(selectedAct.id)];
       const studySecs = studyMins * 60;
-      // if saved remaining exists and is less than full study block, resume from there
       const startSecs = (savedRemaining !== undefined && savedRemaining < studySecs && savedRemaining > 0)
         ? savedRemaining
         : studySecs;
       setTimerSecs(studySecs);
       setRemaining(startSecs);
     } else {
-      const savedRemaining = actProgress[selectedAct.id];
+      const savedRemaining = actProgress[String(selectedAct.id)];
       const startSecs = (savedRemaining !== undefined && savedRemaining > 0 && savedRemaining < setSecs)
         ? savedRemaining
         : setSecs;
@@ -207,14 +208,14 @@ export default function PromoTodo() {
     // save remaining progress to backend
     if (selectedAct) {
       savePromoProgress({
-        actId: selectedAct.id,
+        actId: String(selectedAct.id),
         remainingSecs: remaining,
         setSecs: activeSetSecs,
         category: activeCat,
         label: activeLabel,
       }).then(r => {
         const rem = r.data.data.remainingSecs;
-        setActProgress(prev => ({ ...prev, [selectedAct.id]: rem }));
+        setActProgress(prev => ({ ...prev, [String(selectedAct.id)]: rem }));
       }).catch(() => {});
     }
   };
@@ -231,6 +232,7 @@ export default function PromoTodo() {
     setStudyElapsed(0);
     setCurrentSession(1);
     setPhase('study');
+    setFullscreen(false);
   };
 
   // when a pomodoro study phase finishes → move to break
@@ -287,8 +289,8 @@ export default function PromoTodo() {
       }, ...prev]);
       // clear saved progress for this activity since we logged it
       if (selectedAct) {
-        setActProgress(prev => { const n = { ...prev }; delete n[selectedAct.id]; return n; });
-        savePromoProgress({ actId: selectedAct.id, remainingSecs: 0, setSecs: activeSetSecs, category: activeCat, label: activeLabel }).catch(() => {});
+        setActProgress(prev => { const n = { ...prev }; delete n[String(selectedAct.id)]; return n; });
+        savePromoProgress({ actId: String(selectedAct.id), remainingSecs: 0, setSecs: activeSetSecs, category: activeCat, label: activeLabel }).catch(() => {});
       }
     } catch {}
     handleReset();
@@ -310,8 +312,169 @@ export default function PromoTodo() {
   const [expandedCats, setExpandedCats] = useState(() => Object.fromEntries(CATEGORIES.map(c => [c.key, true])));
   const toggleCat = (key) => setExpandedCats(prev => ({ ...prev, [key]: !prev[key] }));
 
+  const accentColor = phase === 'break' ? '#f59e0b' : cat.color;
+
+  const timerPanel = timerActive && (
+    <div className={fullscreen ? 'pt-fullscreen' : 'tb-card pt-timer-card'}>
+
+      {/* ── fullscreen layout ── */}
+      {fullscreen ? (
+        <>
+          {/* exit btn */}
+          <button className="pt-fs-exit" onClick={() => setFullscreen(false)}>
+            <Minimize2 size={15} /> Exit
+          </button>
+
+          {/* ambient glow */}
+          <div className="pt-fs-glow" style={{ background: accentColor }} />
+
+          {/* top meta */}
+          <div className="pt-fs-meta">
+            {pomodoroMode && (
+              <span className={`pt-phase-badge ${phase}`}>
+                {phase === 'study' ? <><BookOpen size={12}/> Study Session {currentSession}/{totalSessions}</> : <><Coffee size={12}/> Break Time</>}
+              </span>
+            )}
+            <div className="pt-fs-task" style={{ color: accentColor }}>
+              {phase === 'break' ? <Coffee size={20}/> : cat.icon}
+              <span>{phase === 'break' ? 'Break Time' : activeLabel}</span>
+            </div>
+          </div>
+
+          {/* big circle */}
+          <div className="pt-circle-wrap pt-circle-lg">
+            <div className="pt-fs-ring-glow" style={{ boxShadow: `0 0 80px 20px ${accentColor}33` }} />
+            <svg className="pt-circle-svg" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" className="pt-circle-bg" />
+              <circle cx="60" cy="60" r="52" className="pt-circle-prog"
+                style={{ stroke: accentColor, strokeDashoffset: `${326.7 - (326.7 * progress) / 100}` }}
+              />
+            </svg>
+            <div className="pt-circle-inner">
+              <span className="pt-time-display" style={{ color: finished ? '#22c55e' : accentColor }}>
+                {finished ? '✓' : fmtTime(remaining)}
+              </span>
+              <span className="pt-time-sub">
+                {finished ? (phase === 'study' ? 'Done!' : 'Break done!') : `of ${fmtTime(timerSecs)}`}
+              </span>
+            </div>
+          </div>
+
+          {/* planned vs elapsed */}
+          {phase === 'study' && (
+            <div className="pt-fs-stats">
+              <div className="pt-fs-stat">
+                <span className="pt-fs-stat-label">Planned</span>
+                <span className="pt-fs-stat-val" style={{ color: C.violet }}>{fmtDur(activeSetSecs)}</span>
+              </div>
+              <div className="pt-fs-stat-div" />
+              <div className="pt-fs-stat">
+                <span className="pt-fs-stat-label">Elapsed</span>
+                <span className="pt-fs-stat-val" style={{ color: accentColor }}>{fmtDur(timerSecs - remaining)}</span>
+              </div>
+              <div className="pt-fs-stat-div" />
+              <div className="pt-fs-stat">
+                <span className="pt-fs-stat-label">Progress</span>
+                <span className="pt-fs-stat-val" style={{ color: accentColor }}>{progress.toFixed(0)}%</span>
+              </div>
+            </div>
+          )}
+
+          {/* progress bar */}
+          <div className="pt-fs-bar-wrap">
+            <div className="pt-fs-bar" style={{ width: `${progress}%`, background: accentColor }} />
+          </div>
+
+          {/* controls */}
+          <div className="pt-fs-controls">
+            {!finished && (
+              running
+                ? <button className="pt-fs-btn pt-fs-btn-pause" onClick={handlePause}><Pause size={18}/> Pause</button>
+                : <button className="pt-fs-btn pt-fs-btn-resume" onClick={handleResume}><Play size={18}/> Resume</button>
+            )}
+            {finished && pomodoroMode && phase === 'study' && currentSession < totalSessions && (
+              <button className="pt-fs-btn pt-fs-btn-break" onClick={handleStartBreak}><Coffee size={18}/> Start Break</button>
+            )}
+            {finished && pomodoroMode && phase === 'break' && (
+              <button className="pt-fs-btn pt-fs-btn-resume" onClick={handleNextSession}><Play size={18}/> Next Session</button>
+            )}
+            <button className="pt-fs-btn pt-fs-btn-log" onClick={handleLog}><CheckCircle2 size={18}/> Log Time</button>
+            <button className="pt-fs-btn pt-fs-btn-reset" onClick={handleReset}><RotateCcw size={18}/> Reset</button>
+          </div>
+        </>
+      ) : (
+        /* ── normal card layout ── */
+        <>
+          <div className="pt-mini-header">
+            <div className="pt-timer-cat" style={{ color: accentColor }}>
+              {phase === 'break' ? <Coffee size={15}/> : cat.icon}
+              <span>{phase === 'break' ? 'Break Time' : activeLabel}</span>
+            </div>
+            <button className="pt-mini-fs-btn" onClick={() => setFullscreen(true)} title="Go Fullscreen">
+              <Maximize2 size={14}/>
+            </button>
+          </div>
+          {pomodoroMode && (
+            <div className="pt-pomo-status">
+              <span className={`pt-phase-badge ${phase}`}>
+                {phase === 'study' ? <><BookOpen size={12}/> Study</> : <><Coffee size={12}/> Break</>}
+              </span>
+              <span className="pt-session-counter">Session {currentSession} / {totalSessions}</span>
+            </div>
+          )}
+          <div className="pt-circle-wrap">
+            <svg className="pt-circle-svg" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" className="pt-circle-bg" />
+              <circle cx="60" cy="60" r="52" className="pt-circle-prog"
+                style={{ stroke: accentColor, strokeDashoffset: `${326.7 - (326.7 * progress) / 100}` }}
+              />
+            </svg>
+            <div className="pt-circle-inner">
+              <span className="pt-time-display" style={{ color: finished ? '#22c55e' : accentColor }}>
+                {finished ? '✓ Done!' : fmtTime(remaining)}
+              </span>
+              <span className="pt-time-sub">
+                {finished ? (phase === 'study' ? 'Study done!' : 'Break done!') : `of ${fmtTime(timerSecs)}`}
+              </span>
+            </div>
+          </div>
+          {phase === 'study' && (
+            <div className="pt-vs-row">
+              <div className="pt-vs-block"><span className="pt-vs-label">Planned</span><span className="pt-vs-val" style={{ color: C.violet }}>{fmtDur(activeSetSecs)}</span></div>
+              <div className="pt-vs-sep">vs</div>
+              <div className="pt-vs-block"><span className="pt-vs-label">Elapsed</span><span className="pt-vs-val" style={{ color: accentColor }}>{fmtDur(timerSecs - remaining)}</span></div>
+            </div>
+          )}
+          <div className="pt-prog-bar-wrap">
+            <div className="pt-prog-bar" style={{ width: `${progress}%`, background: accentColor }} />
+          </div>
+          <div className="pt-prog-label">
+            <span>{phase === 'break' ? 'Break' : fmtDur(timerSecs - remaining) + ' elapsed'}</span>
+            <span>{progress.toFixed(0)}%</span>
+          </div>
+          <div className="pt-controls">
+            {!finished && (
+              running
+                ? <button className="pt-ctrl-btn pause" onClick={handlePause}><Pause size={16}/> Pause</button>
+                : <button className="pt-ctrl-btn resume" onClick={handleResume}><Play size={16}/> Resume</button>
+            )}
+            {finished && pomodoroMode && phase === 'study' && currentSession < totalSessions && (
+              <button className="pt-ctrl-btn break-btn" onClick={handleStartBreak}><Coffee size={16}/> Start Break</button>
+            )}
+            {finished && pomodoroMode && phase === 'break' && (
+              <button className="pt-ctrl-btn resume" onClick={handleNextSession}><Play size={16}/> Next Session</button>
+            )}
+            <button className="pt-ctrl-btn log" onClick={handleLog}><CheckCircle2 size={16}/> Log Time</button>
+            <button className="pt-ctrl-btn reset" onClick={handleReset}><RotateCcw size={16}/> Reset</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
   return (
     <div className="tb-page">
+      {fullscreen && timerPanel}
       <div className="tb-header-band">
         <div className="tb-header-left">
           <Timer size={22} />
@@ -335,7 +498,7 @@ export default function PromoTodo() {
 
       <ViewNav />
 
-      <div className="pt-layout">
+      {!fullscreen && <div className="pt-layout">
         {/* LEFT */}
         <div className="pt-left">
 
@@ -396,7 +559,7 @@ export default function PromoTodo() {
                   const c = CAT_MAP[act.category];
                   const isSelected = selectedAct?.id === act.id;
                   const setSecs = act.hours * 3600 + act.minutes * 60;
-                  const savedRem = actProgress[act.id];
+                  const savedRem = actProgress[String(act.id)];
                   const hasProgress = savedRem !== undefined && savedRem > 0 && savedRem < setSecs;
                   return (
                     <button
@@ -430,98 +593,12 @@ export default function PromoTodo() {
                 disabled={!selectedAct || (selectedAct.hours * 3600 + selectedAct.minutes * 60) <= 0}
               >
                 <Play size={16} />
-                {selectedAct && actProgress[selectedAct.id] > 0 ? 'Resume Timer' : 'Start Timer'}
+                {selectedAct && actProgress[String(selectedAct.id)] > 0 ? 'Resume Timer' : 'Start Timer'}
               </button>
             )}
           </div>
 
-          {/* Timer Display */}
-          {timerActive && (
-            <div className="tb-card pt-timer-card">
-              {pomodoroMode && (
-                <div className="pt-pomo-status">
-                  <span className={`pt-phase-badge ${phase}`}>
-                    {phase === 'study' ? <><BookOpen size={12}/> Study</> : <><Coffee size={12}/> Break</>}
-                  </span>
-                  <span className="pt-session-counter">Session {currentSession} / {totalSessions}</span>
-                </div>
-              )}
-
-              <div className="pt-timer-cat" style={{ color: phase === 'break' ? '#f59e0b' : cat.color }}>
-                {phase === 'break' ? <Coffee size={15} /> : cat.icon}
-                <span>{phase === 'break' ? 'Break Time' : activeLabel}</span>
-              </div>
-
-              <div className="pt-circle-wrap">
-                <svg className="pt-circle-svg" viewBox="0 0 120 120">
-                  <circle cx="60" cy="60" r="52" className="pt-circle-bg" />
-                  <circle
-                    cx="60" cy="60" r="52"
-                    className="pt-circle-prog"
-                    style={{
-                      stroke: phase === 'break' ? '#f59e0b' : cat.color,
-                      strokeDashoffset: `${326.7 - (326.7 * progress) / 100}`,
-                    }}
-                  />
-                </svg>
-                <div className="pt-circle-inner">
-                  <span className="pt-time-display" style={{ color: finished ? '#22c55e' : (phase === 'break' ? '#f59e0b' : cat.color) }}>
-                    {finished ? '✓ Done!' : fmtTime(remaining)}
-                  </span>
-                  <span className="pt-time-sub">
-                    {finished
-                      ? phase === 'study' ? 'Study done!' : 'Break done!'
-                      : `of ${fmtTime(timerSecs)}`}
-                  </span>
-                </div>
-              </div>
-
-              {/* planned vs elapsed — only show for study phase */}
-              {phase === 'study' && (
-                <div className="pt-vs-row">
-                  <div className="pt-vs-block">
-                    <span className="pt-vs-label">Planned</span>
-                    <span className="pt-vs-val" style={{ color: C.violet }}>{fmtDur(activeSetSecs)}</span>
-                  </div>
-                  <div className="pt-vs-sep">vs</div>
-                  <div className="pt-vs-block">
-                    <span className="pt-vs-label">Elapsed</span>
-                    <span className="pt-vs-val" style={{ color: cat.color }}>{fmtDur(timerSecs - remaining)}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-prog-bar-wrap">
-                <div className="pt-prog-bar" style={{ width: `${progress}%`, background: phase === 'break' ? '#f59e0b' : cat.color }} />
-              </div>
-              <div className="pt-prog-label">
-                <span>{phase === 'break' ? 'Break' : fmtDur(timerSecs - remaining) + ' elapsed'}</span>
-                <span>{progress.toFixed(0)}%</span>
-              </div>
-
-              <div className="pt-controls">
-                {!finished && (
-                  running
-                    ? <button className="pt-ctrl-btn pause"  onClick={handlePause}><Pause size={16} /> Pause</button>
-                    : <button className="pt-ctrl-btn resume" onClick={handleResume}><Play size={16} /> Resume</button>
-                )}
-                {/* after study phase done in pomodoro → start break */}
-                {finished && pomodoroMode && phase === 'study' && currentSession < totalSessions && (
-                  <button className="pt-ctrl-btn break-btn" onClick={handleStartBreak}>
-                    <Coffee size={16} /> Start Break
-                  </button>
-                )}
-                {/* after break done → next session */}
-                {finished && pomodoroMode && phase === 'break' && (
-                  <button className="pt-ctrl-btn resume" onClick={handleNextSession}>
-                    <Play size={16} /> Next Session
-                  </button>
-                )}
-                <button className="pt-ctrl-btn log"   onClick={handleLog}><CheckCircle2 size={16} /> Log Time</button>
-                <button className="pt-ctrl-btn reset" onClick={handleReset}><RotateCcw size={16} /> Reset</button>
-              </div>
-            </div>
-          )}
+          {!fullscreen && timerPanel}
         </div>
 
         {/* RIGHT */}
@@ -625,7 +702,7 @@ export default function PromoTodo() {
             })
           )}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

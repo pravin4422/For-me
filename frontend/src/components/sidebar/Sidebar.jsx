@@ -131,10 +131,10 @@ const NAV = [
     items: [
       {
         label: 'Time Balancer', icon: <Clock size={18} />, path: '/dashboard/time', children: [
+          { label: 'Promo Todo', path: '/dashboard/time/promotodo' },
           { label: 'Daily',      path: '/dashboard/time/daily' },
           { label: 'Weekly',     path: '/dashboard/time/weekly' },
           { label: 'Monthly',    path: '/dashboard/time/monthly' },
-          { label: 'Promo Todo', path: '/dashboard/time/promotodo' },
         ]
       },
       {

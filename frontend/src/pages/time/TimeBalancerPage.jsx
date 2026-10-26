@@ -11,7 +11,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
 } from 'recharts';
 import './TimeBalancerPage.css';
-import { getTimeActivities, createTimeActivity, updateTimeActivity, deleteTimeActivity } from '../../api/time/timeActivityApi';
+import { getTimeActivities, createTimeActivity, updateTimeActivity, deleteTimeActivity, getTimeLogs, toggleTimeLog } from '../../api/time/timeActivityApi';
 
 // ── palette ───────────────────────────────────────────────
 const C = { indigo:'#343090', violet:'#5f59f7', blue:'#6592fd', sky:'#44c2fd', purple:'#8c61ff' };
@@ -338,20 +338,22 @@ function ActivityList({ activities, doneIds, onToggleDone, onEdit, onDelete }) {
 
 // ── breakdown bars ────────────────────────────────────────
 function BreakdownBars({ activities, doneIds }) {
-  const doneActs = activities.filter(a => doneIds.includes(a.id));
-  const totalH   = doneActs.reduce((s,a) => s + toH(a.hours, a.minutes), 0);
+  const allActs  = activities;
+  const doneActs = doneIds ? activities.filter(a => doneIds.includes(a.id)) : [];
   return (
     <div className="tb-breakdown-list">
       {CATEGORIES.map(c => {
-        const hrs = doneActs.filter(a => a.category === c.key).reduce((s,a) => s + toH(a.hours, a.minutes), 0);
-        const pct = totalH > 0 ? (hrs / totalH) * 100 : 0;
+        const planned = allActs.filter(a => a.category === c.key).reduce((s,a) => s + toH(a.hours, a.minutes), 0);
+        const done    = doneActs.filter(a => a.category === c.key).reduce((s,a) => s + toH(a.hours, a.minutes), 0);
+        const pct     = planned > 0 ? Math.min((done / planned) * 100, 100) : 0;
+        if (planned === 0) return null;
         return (
           <div key={c.key} className="tb-bd-row">
             <span className="tb-bd-icon" style={{color:c.color}}>{c.icon}</span>
             <span className="tb-bd-label">{c.label}</span>
             <div className="tb-bd-bar-wrap"><div className="tb-bd-bar" style={{width:`${pct}%`,background:c.color}}/></div>
             <span className="tb-bd-pct">{pct.toFixed(0)}%</span>
-            <span className="tb-bd-hrs" style={{color:c.color}}>{hrs.toFixed(1)}h</span>
+            <span className="tb-bd-hrs" style={{color:c.color}}>{done.toFixed(1)}h<span style={{color:'var(--text-muted)',fontWeight:400}}>/{planned.toFixed(1)}h</span></span>
           </div>
         );
       })}
@@ -394,10 +396,10 @@ function ViewNav({ active }) {
   const navigate = useNavigate();
   const views = [
     { key:'overview',  label:'Overview',   path:'/dashboard/time',              icon:<LayoutGrid size={13}/> },
+    { key:'promotodo', label:'Promo Todo', path:'/dashboard/time/promotodo',    icon:<Timer size={13}/> },
     { key:'daily',     label:'Daily',      path:'/dashboard/time/daily',        icon:<CalendarDays size={13}/> },
     { key:'weekly',    label:'Weekly',     path:'/dashboard/time/weekly',       icon:<TrendingUp size={13}/> },
     { key:'monthly',   label:'Monthly',    path:'/dashboard/time/monthly',      icon:<TrendingDown size={13}/> },
-    { key:'promotodo', label:'Promo Todo', path:'/dashboard/time/promotodo',    icon:<Timer size={13}/> },
   ];
   return (
     <div className="tb-viewnav">
@@ -410,58 +412,143 @@ function ViewNav({ active }) {
   );
 }
 
-// ── static placeholder chart data ───────────────────────
-const WEEKLY_DATA = [
-  { day:'Mon', study:2, work:4, sleep:7, exercise:1, travel:0.5, other:0 },
-  { day:'Tue', study:3, work:5, sleep:7, exercise:0, travel:1,   other:0.5 },
-  { day:'Wed', study:2, work:4, sleep:8, exercise:1, travel:0,   other:1 },
-  { day:'Thu', study:4, work:3, sleep:7, exercise:1, travel:0.5, other:0 },
-  { day:'Fri', study:1, work:6, sleep:7, exercise:0, travel:1,   other:0.5 },
-  { day:'Sat', study:3, work:0, sleep:8, exercise:2, travel:1,   other:2 },
-  { day:'Sun', study:2, work:0, sleep:9, exercise:1, travel:0,   other:3 },
-];
-const MONTHLY_DATA = [
-  { month:'Jan', study:40, work:80, sleep:180, exercise:20, travel:10, other:15 },
-  { month:'Feb', study:50, work:75, sleep:170, exercise:25, travel:12, other:10 },
-  { month:'Mar', study:60, work:85, sleep:175, exercise:30, travel:8,  other:12 },
-  { month:'Apr', study:55, work:90, sleep:180, exercise:22, travel:15, other:18 },
-  { month:'May', study:70, work:88, sleep:178, exercise:28, travel:10, other:14 },
-];
-const COMPARE_DATA = [
-  { category:'Study',    thisWeek:17, lastWeek:14 },
-  { category:'Work',     thisWeek:22, lastWeek:25 },
-  { category:'Sleep',    thisWeek:53, lastWeek:50 },
-  { category:'Exercise', thisWeek:6,  lastWeek:4  },
-  { category:'Travel',   thisWeek:4,  lastWeek:5  },
-  { category:'Other',    thisWeek:7,  lastWeek:9  },
-];
+// ── data helpers ─────────────────────────────────────────
+function getWeeklyData(logs) {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const iso = d.toISOString().split('T')[0];
+    const dow = d.getDay();
+    const label = DAYS_SHORT[dow];
+    const row = { day: label };
+    CATEGORIES.forEach(c => {
+      row[c.key] = parseFloat(
+        logs.filter(a => {
+          if (a.category !== c.key) return false;
+          if (a.repeat === 'daily') return true;
+          if (a.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+          if (a.repeat === 'weekends') return dow === 0 || dow === 6;
+          if (a.repeat === 'weekly') return a.repeatDay === dow;
+          if (a.repeat === 'monthly') return a.repeatDate === d.getDate();
+          if (a.repeat === 'custom') return (a.customDays || []).includes(dow);
+          if (a.repeat === 'none') return a.startDate === iso;
+          return false;
+        }).reduce((s, a) => s + toH(a.hours, a.minutes), 0).toFixed(2)
+      );
+    });
+    days.push(row);
+  }
+  return days;
+}
+
+function getMonthlyData(logs) {
+  const months = [];
+  for (let i = 4; i >= 0; i--) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const label = d.toLocaleDateString('en-US', { month: 'short' });
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const row = { month: label };
+    CATEGORIES.forEach(c => {
+      let total = 0;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dow = date.getDay();
+        const iso = date.toISOString().split('T')[0];
+        logs.filter(a => a.category === c.key).forEach(a => {
+          if (a.repeat === 'daily') total += toH(a.hours, a.minutes);
+          else if (a.repeat === 'weekdays' && dow >= 1 && dow <= 5) total += toH(a.hours, a.minutes);
+          else if (a.repeat === 'weekends' && (dow === 0 || dow === 6)) total += toH(a.hours, a.minutes);
+          else if (a.repeat === 'weekly' && a.repeatDay === dow) total += toH(a.hours, a.minutes);
+          else if (a.repeat === 'monthly' && a.repeatDate === day) total += toH(a.hours, a.minutes);
+          else if (a.repeat === 'custom' && (a.customDays || []).includes(dow)) total += toH(a.hours, a.minutes);
+          else if (a.repeat === 'none' && a.startDate === iso) total += toH(a.hours, a.minutes);
+        });
+      }
+      row[c.key] = parseFloat(total.toFixed(1));
+    });
+    months.push(row);
+  }
+  return months;
+}
+
+function getCompareData(logs) {
+  const now = new Date();
+  return CATEGORIES.map(c => {
+    let thisWeek = 0, lastWeek = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      const dow = d.getDay(), iso = d.toISOString().split('T')[0];
+      logs.filter(a => a.category === c.key).forEach(a => {
+        const h = toH(a.hours, a.minutes);
+        if (a.repeat==='daily') thisWeek+=h;
+        else if (a.repeat==='weekdays'&&dow>=1&&dow<=5) thisWeek+=h;
+        else if (a.repeat==='weekends'&&(dow===0||dow===6)) thisWeek+=h;
+        else if (a.repeat==='weekly'&&a.repeatDay===dow) thisWeek+=h;
+        else if (a.repeat==='monthly'&&a.repeatDate===d.getDate()) thisWeek+=h;
+        else if (a.repeat==='custom'&&(a.customDays||[]).includes(dow)) thisWeek+=h;
+        else if (a.repeat==='none'&&a.startDate===iso) thisWeek+=h;
+      });
+    }
+    for (let i = 7; i < 14; i++) {
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      const dow = d.getDay(), iso = d.toISOString().split('T')[0];
+      logs.filter(a => a.category === c.key).forEach(a => {
+        const h = toH(a.hours, a.minutes);
+        if (a.repeat==='daily') lastWeek+=h;
+        else if (a.repeat==='weekdays'&&dow>=1&&dow<=5) lastWeek+=h;
+        else if (a.repeat==='weekends'&&(dow===0||dow===6)) lastWeek+=h;
+        else if (a.repeat==='weekly'&&a.repeatDay===dow) lastWeek+=h;
+        else if (a.repeat==='monthly'&&a.repeatDate===d.getDate()) lastWeek+=h;
+        else if (a.repeat==='custom'&&(a.customDays||[]).includes(dow)) lastWeek+=h;
+        else if (a.repeat==='none'&&a.startDate===iso) lastWeek+=h;
+      });
+    }
+    return { category: c.label, thisWeek: parseFloat(thisWeek.toFixed(1)), lastWeek: parseFloat(lastWeek.toFixed(1)) };
+  });
+}
 
 // ── MAIN PAGE ─────────────────────────────────────────────
 export default function TimeBalancerPage({ tab }) {
   const [logs,      setLogs]      = useState([]);
-  const [doneIds,   setDoneIds]   = useState([]);
+  const [doneIds,   setDoneIds]   = useState(() => { try { return JSON.parse(localStorage.getItem(`tb-done-${todayISO}`)) || []; } catch { return []; } });
   const [showForm,  setShowForm]  = useState(false);
   const [editEntry, setEditEntry] = useState(null);
-  const [chartTab,  setChartTab]  = useState('daily'); // for overview chart switcher
+  const [chartTab,  setChartTab]  = useState('daily');
 
-  const todayActs  = logs.filter(isScheduledToday);
+  const todayActs    = logs.filter(isScheduledToday);
   const doneTodayIds = doneIds.filter(id => todayActs.some(a => a.id === id));
-  const totalH     = doneTodayIds.reduce((s, id) => {
-    const a = todayActs.find(x => x.id === id);
-    return s + (a ? toH(a.hours, a.minutes) : 0);
-  }, 0);
+  const totalH = todayActs
+    .filter(a => doneIds.includes(a.id))
+    .reduce((s, a) => s + toH(a.hours, a.minutes), 0);
+
+  const weeklyData  = getWeeklyData(logs);
+  const monthlyData = getMonthlyData(logs);
+  const compareData = getCompareData(logs);
 
   const dailyDonut = CATEGORIES.map(c => ({
     name:c.label, key:c.key,
     value:parseFloat(
-      todayActs.filter(a => doneTodayIds.includes(a.id) && a.category===c.key)
+      todayActs.filter(a => a.category===c.key)
         .reduce((s,e)=>s+toH(e.hours,e.minutes),0).toFixed(2)
     ),
   })).filter(d=>d.value>0);
 
   useEffect(() => {
     getTimeActivities()
-      .then(r => setLogs(r.data.data.map(a => ({ ...a, id: a._id }))))
+      .then(r => {
+        const mapped = r.data.data.map(a => ({ ...a, id: String(a._id) }));
+        setLogs(mapped);
+        const validIds = mapped.filter(isScheduledToday).map(a => a.id);
+        setDoneIds(prev => {
+          const synced = prev.filter(id => validIds.includes(id));
+          localStorage.setItem(`tb-done-${todayISO}`, JSON.stringify(synced));
+          return synced;
+        });
+      })
       .catch(() => {});
   }, []);
 
@@ -471,12 +558,12 @@ export default function TimeBalancerPage({ tab }) {
   const handleSubmit = async (entry) => {
     try {
       if (editEntry) {
-        const r = await updateTimeActivity(editEntry._id || editEntry.id, entry);
-        const updated = { ...r.data.data, id: r.data.data._id };
+        const r = await updateTimeActivity(editEntry.id, entry);
+        const updated = { ...r.data.data, id: String(r.data.data._id) };
         setLogs(p => p.map(x => x.id === updated.id ? updated : x));
       } else {
         const r = await createTimeActivity(entry);
-        const created = { ...r.data.data, id: r.data.data._id };
+        const created = { ...r.data.data, id: String(r.data.data._id) };
         setLogs(p => [created, ...p]);
       }
     } catch {}
@@ -491,7 +578,12 @@ export default function TimeBalancerPage({ tab }) {
   };
 
   const handleToggleDone = (act) => {
-    setDoneIds(p => p.includes(act.id) ? p.filter(x=>x!==act.id) : [...p, act.id]);
+    setDoneIds(p => {
+      const id = act.id;
+      const updated = p.includes(id) ? p.filter(x => x !== id) : [...p, id];
+      localStorage.setItem(`tb-done-${todayISO}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const CHART_TABS = [
@@ -519,14 +611,14 @@ export default function TimeBalancerPage({ tab }) {
         <div className="tb-card">
           <p className="tb-chart-title" style={{marginBottom:12}}>Today's Time Split</p>
           {dailyDonut.length===0
-            ? <div className="tb-empty"><Clock size={28}/><p>No time logged yet today — mark activities as done</p></div>
+            ? <div className="tb-empty"><Clock size={28}/><p>No activities scheduled for today</p></div>
             : <TimeBalancerChart type="donut" data={dailyDonut}/>
           }
         </div>
       </div>
       <div className="tb-card">
         <div className="tb-card-header"><TrendingUp size={16} style={{color:C.violet}}/><h3>Today's Breakdown</h3></div>
-        <BreakdownBars activities={logs} doneIds={doneIds}/>
+        <BreakdownBars activities={todayActs} doneIds={doneTodayIds}/>
       </div>
     </div>
   );
@@ -539,12 +631,12 @@ export default function TimeBalancerPage({ tab }) {
       {showForm && <ActivityForm editAct={editEntry} onSubmit={handleSubmit} onCancel={closeForm}/>}
       <div className="tb-card">
         <div className="tb-card-header"><TrendingUp size={16} style={{color:C.violet}}/><h3>Hours per Category — Last 7 Days</h3></div>
-        <TimeBalancerChart type="bar" data={WEEKLY_DATA} xKey="day"/>
+        <TimeBalancerChart type="bar" data={weeklyData} xKey="day"/>
       </div>
       <div className="tb-card">
         <div className="tb-card-header"><TrendingUp size={16} style={{color:C.violet}}/><h3>This Week vs Last Week</h3></div>
-        <CompareChips data={COMPARE_DATA}/>
-        <TimeBalancerChart type="compare" data={COMPARE_DATA}/>
+        <CompareChips data={compareData}/>
+        <TimeBalancerChart type="compare" data={compareData}/>
       </div>
       <div className="tb-card">
         <div className="tb-card-header"><CalendarDays size={16} style={{color:C.violet}}/><h3>Today's Log</h3><span className="tb-badge">{todayActs.length} entries</span></div>
@@ -561,11 +653,11 @@ export default function TimeBalancerPage({ tab }) {
       {showForm && <ActivityForm editAct={editEntry} onSubmit={handleSubmit} onCancel={closeForm}/>}
       <div className="tb-card">
         <div className="tb-card-header"><TrendingUp size={16} style={{color:C.violet}}/><h3>Monthly Trend — Hours per Category</h3></div>
-        <TimeBalancerChart type="line" data={MONTHLY_DATA} xKey="month"/>
+        <TimeBalancerChart type="line" data={monthlyData} xKey="month"/>
       </div>
       <div className="tb-card">
         <div className="tb-card-header"><TrendingUp size={16} style={{color:C.violet}}/><h3>This Month's Breakdown</h3></div>
-        <BreakdownBars activities={logs} doneIds={doneIds}/>
+        <BreakdownBars activities={todayActs} doneIds={doneTodayIds}/>
       </div>
     </div>
   );
@@ -580,7 +672,7 @@ export default function TimeBalancerPage({ tab }) {
       {/* stat cards row */}
       <div className="tb-stat-cards">
         {CATEGORIES.map(c => {
-          const hrs = todayActs.filter(a=>doneTodayIds.includes(a.id)&&a.category===c.key).reduce((s,e)=>s+toH(e.hours,e.minutes),0);
+          const hrs = todayActs.filter(a=>a.category===c.key).reduce((s,e)=>s+toH(e.hours,e.minutes),0);
           return (
             <div key={c.key} className="tb-stat-card" style={{borderTopColor:c.color}}>
               <span className="tb-sc-icon" style={{color:c.color}}>{c.icon}</span>
@@ -613,14 +705,14 @@ export default function TimeBalancerPage({ tab }) {
               <>
                 <p className="tb-chart-title">Today's Time Split</p>
                 {dailyDonut.length===0
-                  ? <div className="tb-empty"><Clock size={28}/><p>No time logged yet today — log your first activity</p></div>
+                  ? <div className="tb-empty"><Clock size={28}/><p>No activities scheduled for today</p></div>
                   : <TimeBalancerChart type="donut" data={dailyDonut}/>
                 }
               </>
             )}
-            {chartTab==='weekly'  && <><p className="tb-chart-title">Last 7 Days</p><TimeBalancerChart type="bar"  data={WEEKLY_DATA}  xKey="day"/></>}
-            {chartTab==='monthly' && <><p className="tb-chart-title">Monthly Trend</p><TimeBalancerChart type="line" data={MONTHLY_DATA} xKey="month"/></>}
-            {chartTab==='compare' && <><p className="tb-chart-title">This Week vs Last Week</p><CompareChips data={COMPARE_DATA}/><TimeBalancerChart type="compare" data={COMPARE_DATA}/></>}
+            {chartTab==='weekly'  && <><p className="tb-chart-title">Last 7 Days</p><TimeBalancerChart type="bar"  data={weeklyData}  xKey="day"/></>}
+            {chartTab==='monthly' && <><p className="tb-chart-title">Monthly Trend</p><TimeBalancerChart type="line" data={monthlyData} xKey="month"/></>}
+            {chartTab==='compare' && <><p className="tb-chart-title">This Week vs Last Week</p><CompareChips data={compareData}/><TimeBalancerChart type="compare" data={compareData}/></>}
           </div>
         </div>
       </div>
@@ -628,7 +720,7 @@ export default function TimeBalancerPage({ tab }) {
       {/* breakdown */}
       <div className="tb-card">
         <div className="tb-card-header"><TrendingUp size={16} style={{color:C.violet}}/><h3>Today's Breakdown</h3></div>
-        <BreakdownBars activities={logs} doneIds={doneIds}/>
+        <BreakdownBars activities={todayActs} doneIds={doneTodayIds}/>
       </div>
     </div>
   );
